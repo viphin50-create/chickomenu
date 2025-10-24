@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карточки для обучения сотрудников</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #fef08a 0%, #fde68a 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Card animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-animation {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    @keyframes shake {
+
+      10%,
+      90% {
+        transform: translateX(-1px);
+      }
+
+      20%,
+      80% {
+        transform: translateX(2px);
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: translateX(-4px);
+      }
+
+      40%,
+      60% {
+        transform: translateX(4px);
+      }
+    }
+
+    .shake {
+      animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+    }
+
+    /* 3D hover effect */
+    .card-3d-hover:hover {
+      transform: scale(1.05) rotateX(2deg) rotateY(2deg);
+    }
+
+    .card-3d-hover {
+      transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+  </style>
+</head>
+
+<body class="p-4 sm:p-8 flex flex-col items-center justify-center">
+  <div class="max-w-4xl mx-auto w-full">
+    <!-- Logo -->
+    <div class="flex justify-center mt-8 mb-4">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-amber-600">
+        ЧИКО
+      </h1>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center my-10 sm:my-16">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-800">
+        Режимы <span class="text-amber-600">обучения</span>
+      </h1>
+      <p id="view-message" class="text-gray-600 mt-2 font-medium">Нажмите на карточку, чтобы увидеть детали</p>
+    </div>
+
+    <!-- View buttons -->
+    <div id="view-buttons" class="flex justify-center gap-4 mb-8">
+      <button id="flashcard-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-amber-500 text-white shadow-lg">Экспресс-проверка</button>
+      <button id="list-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-200 text-gray-600">Все блюда</button>
+      <button id="quiz-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-200 text-gray-600">Тест</button>
+    </div>
+
+    <!-- Search input -->
+    <div id="search-container" class="w-full mb-6">
+      <div class="relative rounded-full shadow-md">
+        <input type="text" id="search-input" placeholder="Поиск по названию или аллергену..." class="w-full px-6 py-3 rounded-full border-2 border-transparent focus:outline-none focus:border-amber-500 transition-all duration-300 pl-12">
+        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
+      </div>
+    </div>
+
+    <!-- Filter buttons -->
+    <div id="filter-buttons" class="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8"></div>
+
+    <!-- Main content container -->
+    <div class="flex flex-col items-center">
+      <div id="loading-spinner" class="text-center py-12">
+        <svg class="animate-spin h-10 w-10 text-amber-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.965l3-2.674zm13.715-6.195A7.962 7.962 0 0120 12h4c0-3.042-1.135-5.824-3-7.965l-3 2.674zM12 20a8 8 0 008-8h4c0 6.627-5.373 12-12 12v-4z"></path>
+        </svg>
+        <p class="mt-2 text-gray-500 font-medium">Загрузка данных...</p>
+      </div>
+
+      <div id="card-container" class="w-full"></div>
+
+      <!-- Flashcard navigation (buttons for desktop, hidden on mobile) -->
+      <div id="flashcard-nav" class="flex justify-between items-center w-full mt-6">
+        <button id="prev-btn" class="bg-amber-500 text-white rounded-full p-3 shadow-lg hover:bg-amber-600 focus:outline-none transition-all duration-300 transform hover:scale-110">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <span id="card-counter" class="text-gray-600 font-medium text-lg"></span>
+        <button id="next-btn" class="bg-amber-500 text-white rounded-full p-3 shadow-lg hover:bg-amber-600 focus:outline-none transition-all duration-300 transform hover:scale-110">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- Quiz buttons -->
+      <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mt-6"></div>
+      <button id="next-quiz-btn" class="mt-6 px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-amber-500 text-white shadow-lg hidden">Далее</button>
+      <button id="show-answer-btn" class="mt-4 px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-500 text-white shadow-lg hidden">Показать правильный ответ</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzcJMQjrWXO96NnjwHMwpj_m-vY_KkPAzVJcjeUc89QCrnE6EY_cm3VYwVxD7_i_x-IYk0g1_llqB4/pub?output=csv';
+      const cardContainer = document.getElementById('card-container');
+      const counterElement = document.getElementById('card-counter');
+      const spinner = document.getElementById('loading-spinner');
+      const filterButtonsContainer = document.getElementById('filter-buttons');
+      const flashcardBtn = document.getElementById('flashcard-btn');
+      const listBtn = document.getElementById('list-btn');
+      const quizBtn = document.getElementById('quiz-btn');
+      const flashcardNav = document.getElementById('flashcard-nav');
+      const viewMessage = document.getElementById('view-message');
+      const searchInput = document.getElementById('search-input');
+      const searchContainer = document.getElementById('search-container');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const quizOptionsContainer = document.getElementById('quiz-options');
+      const nextQuizBtn = document.getElementById('next-quiz-btn');
+      const showAnswerBtn = document.getElementById('show-answer-btn');
+      let allProducts = [];
+      let displayedProducts = [];
+      let currentCardIndex = 0;
+      let detailsVisible = false;
+      let currentView = 'flashcard';
+      let quizAnswered = false;
+      let quizMode = 'allergen';
+      // Carousel state
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+      let isCardAnimating = false;
+
+      function parseCSV(text) {
+        const results = [];
+        let inQuote = false;
+        let currentRow = [];
+        let currentCell = '';
+        const lines = text.split(/\r?\n/);
+        if (lines.length === 0 || lines[0].trim() === '') return [];
+        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (line.trim() === '' && !inQuote) continue;
+          for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            if (char === '"') {
+              inQuote = !inQuote;
+            } else if (char === ',' && !inQuote) {
+              currentRow.push(currentCell.trim());
+              currentCell = '';
+            } else {
+              currentCell += char;
+            }
+          }
+          if (inQuote) {
+            currentCell += '\n';
+          } else {
+            currentRow.push(currentCell.trim());
+            if (currentRow.length === header.length) {
+              const product = {};
+              header.forEach((key, index) => {
+                product[key] = currentRow[index] || '';
+              });
+              if (product.name && product.image) {
+                results.push(product);
+              }
+            }
+            currentRow = [];
+            currentCell = '';
+          }
+        }
+        return results;
+      }
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      function renderFlashcardView() {
+        searchContainer.style.display = 'none';
+        quizOptionsContainer.innerHTML = '';
+        nextQuizBtn.classList.add('hidden');
+        showAnswerBtn.classList.add('hidden');
+        cardContainer.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-6');
+        filterButtonsContainer.style.display = 'none';
+        flashcardNav.style.display = 'flex';
+        if (displayedProducts.length === 0) {
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
+          return;
+        }
+        const product = displayedProducts[currentCardIndex];
+        counterElement.textContent = `${currentCardIndex + 1} / ${displayedProducts.length}`;
+        cardContainer.innerHTML = '';
+        const card = document.createElement('div');
+        card.id = 'current-card';
+        card.className = 'bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover cursor-pointer max-w-lg mx-auto';
+        const detailsHtml = `
+                    <h2 class="text-xl font-semibold text-gray-900 mb-2">${product.name}</h2>
+                    <div id="details-section" class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
+                        <div class="flex items-start">
+                            <div class="flex items-center flex-none w-28">
+                                <i class="fas fa-exclamation-triangle text-amber-500 text-lg mr-2"></i>
+                                <span class="font-medium text-gray-600">Аллергены:</span>
+                            </div>
+                            <span class="text-gray-800 font-bold ml-2 flex-1 whitespace-pre-wrap">${product.allergen}</span>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex items-center flex-none w-28">
+                                <i class="fas fa-utensils text-green-500 text-lg mr-2"></i>
+                                <span class="font-medium text-gray-600">Подача:</span>
+                            </div>
+                            <span class="text-gray-800 ml-2 flex-1 whitespace-pre-wrap">${product.serving}</span>
+                        </div>
+                    </div>
+                `;
+        card.innerHTML = `
+                    <div class="w-full h-56 bg-gray-200 rounded-2xl overflow-hidden mb-4 shadow-inner">
+                        <img src="${product.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';" alt="Изображение блюда" class="w-full h-full object-cover">
+                    </div>
+                    ${detailsVisible ? detailsHtml : ''}
+                `;
+        cardContainer.appendChild(card);
+        card.addEventListener('click', () => {
+          detailsVisible = !detailsVisible;
+          renderFlashcardView();
+        });
+        // Check device type to determine navigation style
+        if (window.innerWidth < 768) {
+          // Mobile: Swipe navigation
+          prevBtn.style.display = 'none';
+          nextBtn.style.display = 'none';
+          viewMessage.textContent = 'Свайп влево/вправо для перелистывания';
+          card.addEventListener('mousedown', startDrag);
+          card.addEventListener('mousemove', drag);
+          card.addEventListener('mouseup', endDrag);
+          card.addEventListener('mouseleave', endDrag);
+          card.addEventListener('touchstart', startDrag);
+          card.addEventListener('touchmove', drag);
+          card.addEventListener('touchend', endDrag);
+        } else {
+          // Desktop: Button navigation
+          prevBtn.style.display = 'block';
+          nextBtn.style.display = 'block';
+          viewMessage.textContent = 'Используйте кнопки для перелистывания';
+          // Remove swipe listeners if they were attached
+          card.removeEventListener('mousedown', startDrag);
+          card.removeEventListener('mousemove', drag);
+          card.removeEventListener('mouseup', endDrag);
+          card.removeEventListener('mouseleave', endDrag);
+          card.removeEventListener('touchstart', startDrag);
+          card.removeEventListener('touchmove', drag);
+          card.removeEventListener('touchend', endDrag);
+        }
+      }
+
+      function renderListView() {
+        flashcardNav.style.display = 'none';
+        quizOptionsContainer.innerHTML = '';
+        nextQuizBtn.classList.add('hidden');
+        showAnswerBtn.classList.add('hidden');
+        searchContainer.style.display = 'block';
+        viewMessage.textContent = 'Все блюда с полным описанием';
+        cardContainer.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-6');
+        cardContainer.innerHTML = '';
+        filterButtonsContainer.style.display = 'flex';
+        if (displayedProducts.length === 0) {
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
+          return;
+        }
+        displayedProducts.forEach(product => {
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover';
+          card.innerHTML = `
+                        <div class="w-full h-40 sm:h-48 bg-gray-200 rounded-2xl overflow-hidden mb-4 shadow-inner">
+                            <img src="${product.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';" alt="Изображение блюда" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-grow w-full">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-2">${product.name}</h2>
+                            
+                            <!-- Allergens -->
+                            <div class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exclamation-triangle text-amber-500 text-lg mr-2"></i>
+                                    <span class="font-medium text-gray-600">Аллергены:</span>
+                                </div>
+                                <p class="text-gray-800 font-bold whitespace-pre-wrap">${product.allergen}</p>
+                            </div>
+
+                            <!-- Serving -->
+                            <div class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-utensils text-green-500 text-lg mr-2"></i>
+                                    <span class="font-medium text-gray-600">Подача:</span>
+                                </div>
+                                <p class="text-gray-800 whitespace-pre-wrap">${product.serving}</p>
+                            </div>
+                        </div>
+                    `;
+          cardContainer.appendChild(card);
+        });
+      }
+
+      function renderQuizView() {
+        searchContainer.style.display = 'none';
+        flashcardNav.style.display = 'none';
+        filterButtonsContainer.style.display = 'none';
+        cardContainer.classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-6');
+        quizOptionsContainer.innerHTML = '';
+        nextQuizBtn.classList.add('hidden');
+        showAnswerBtn.classList.remove('hidden');
+        if (allProducts.length < 4) {
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Недостаточно данных для теста. Добавьте как минимум 4 блюда.</p>';
+          return;
+        }
+        shuffleArray(allProducts);
+        const currentProduct = allProducts[0];
+        let allAnswers = [];
+        viewMessage.textContent = 'Выберите правильный аллерген';
+        const wrongAnswers = allProducts.slice(1, 4).map(p => p.allergen);
+        allAnswers = [currentProduct.allergen, ...wrongAnswers];
+        shuffleArray(allAnswers);
+        cardContainer.innerHTML = `
+                    <div class="bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover cursor-pointer max-w-lg mx-auto">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-2">${currentProduct.name}</h2>
+                        <div id="quiz-image-container" class="hidden">
+                            <div class="w-full h-56 bg-gray-200 rounded-2xl overflow-hidden mt-4 shadow-inner">
+                                <img src="${currentProduct.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';" alt="Изображение блюда" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                `;
+        allAnswers.forEach(answer => {
+          const button = document.createElement('button');
+          button.textContent = answer;
+          button.className = 'px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-200 text-gray-600 shadow-md';
+          const correctAnswer = currentProduct.allergen;
+          button.addEventListener('click', () => handleQuizAnswer(button, answer === correctAnswer));
+          quizOptionsContainer.appendChild(button);
+        });
+      }
+
+      function handleQuizAnswer(button, isCorrect) {
+        if (quizAnswered) return;
+        quizAnswered = true;
+        if (isCorrect) {
+          button.classList.remove('bg-gray-200', 'text-gray-600');
+          button.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600');
+          button.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${button.textContent}`;
+        } else {
+          button.classList.remove('bg-gray-200', 'text-gray-600');
+          button.classList.add('bg-red-500', 'text-white', 'shake', 'hover:bg-red-600');
+          button.innerHTML = `<i class="fas fa-times-circle mr-2"></i> ${button.textContent}`;
+          // Highlight correct answer
+          const allButtons = quizOptionsContainer.querySelectorAll('button');
+          allButtons.forEach(btn => {
+            const correctAnswer = quizMode === 'allergen' ? allProducts[0].allergen : allProducts[0].name;
+            if (btn.textContent === correctAnswer) {
+              btn.classList.remove('bg-gray-200');
+              btn.classList.add('bg-green-500', 'text-white');
+            }
+          });
+        }
+        nextQuizBtn.classList.remove('hidden');
+        showAnswerBtn.classList.add('hidden'); // Hide the button after an answer is given
+      }
+      showAnswerBtn.addEventListener('click', () => {
+        const imgContainer = document.getElementById('quiz-image-container');
+        if (imgContainer) {
+          imgContainer.classList.remove('hidden');
+        }
+        const allButtons = quizOptionsContainer.querySelectorAll('button');
+        allButtons.forEach(btn => {
+          const correctAnswer = allProducts[0].allergen;
+          if (btn.textContent === correctAnswer) {
+            btn.classList.remove('bg-gray-200');
+            btn.classList.add('bg-green-500', 'text-white');
+          }
+        });
+      });
+      nextQuizBtn.addEventListener('click', () => {
+        quizAnswered = false;
+        allProducts.shift(); // Remove answered question
+        renderQuizView();
+      });
+
+      function renderView() {
+        if (currentView === 'flashcard') {
+          renderFlashcardView();
+        } else if (currentView === 'list') {
+          renderListView();
+        } else if (currentView === 'quiz') {
+          renderQuizView();
+        }
+      }
+
+      function filterCards(category) {
+        displayedProducts = allProducts.filter(p => p.category === category);
+        currentCardIndex = 0;
+        detailsVisible = false;
+        renderView();
+      }
+
+      function setActiveButton(container, activeButton) {
+        container.querySelectorAll('button').forEach(btn => {
+          btn.classList.remove('bg-amber-500', 'text-white', 'shadow-lg');
+          btn.classList.add('bg-gray-200', 'text-gray-600');
+        });
+        if (activeButton) {
+          activeButton.classList.remove('bg-gray-200', 'text-gray-600');
+          activeButton.classList.add('bg-amber-500', 'text-white', 'shadow-lg');
+        }
+      }
+
+      function createFilterButtons(categories) {
+        filterButtonsContainer.innerHTML = '';
+        categories.forEach(category => {
+          const button = document.createElement('button');
+          button.textContent = category;
+          button.className = 'px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105';
+          button.addEventListener('click', () => {
+            filterCards(category);
+            setActiveButton(filterButtonsContainer, button);
+          });
+          filterButtonsContainer.appendChild(button);
+        });
+      }
+
+      function searchCards() {
+        const query = searchInput.value.toLowerCase();
+        const filtered = allProducts.filter(product => {
+          const name = product.name ? product.name.toLowerCase() : '';
+          const allergen = product.allergen ? product.allergen.toLowerCase() : '';
+          return name.includes(query) || allergen.includes(query);
+        });
+        displayedProducts = filtered;
+        currentCardIndex = 0;
+        detailsVisible = false;
+        renderView();
+      }
+      async function fetchAndRenderCards(url) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error('Ошибка сети при загрузке данных.');
+          }
+          const csvText = await response.text();
+          allProducts = parseCSV(csvText);
+          displayedProducts = [...allProducts];
+          spinner.style.display = 'none';
+          if (allProducts.length > 0) {
+            const categories = [...new Set(allProducts.map(p => p.category).filter(c => c))];
+            createFilterButtons(categories);
+            renderView();
+            searchInput.addEventListener('input', searchCards);
+            // Button listeners for desktop
+            prevBtn.addEventListener('click', () => {
+              currentCardIndex = (currentCardIndex - 1 + displayedProducts.length) % displayedProducts.length;
+              detailsVisible = false;
+              renderFlashcardView();
+            });
+            nextBtn.addEventListener('click', () => {
+              currentCardIndex = (currentCardIndex + 1) % displayedProducts.length;
+              detailsVisible = false;
+              renderFlashcardView();
+            });
+          } else {
+            cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки данных:', error);
+          spinner.style.display = 'none';
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-red-500 font-medium">Ошибка загрузки данных. Проверьте ссылку и доступ.</p>';
+        }
+      }
+      // Carousel functions
+      function startDrag(e) {
+        if (isCardAnimating) return;
+        isDragging = true;
+        startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        const card = document.getElementById('current-card');
+        card.style.transition = 'none';
+      }
+
+      function drag(e) {
+        if (!isDragging || isCardAnimating) return;
+        currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        const card = document.getElementById('current-card');
+        const dragOffset = currentX - startX;
+        card.style.transform = `translateX(${dragOffset}px)`;
+      }
+
+      function endDrag(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        isCardAnimating = true;
+        const endX = e.type.includes('mouse') ? e.pageX : e.changedTouches[0].pageX;
+        const dragOffset = endX - startX;
+        const swipeThreshold = 50;
+        const card = document.getElementById('current-card');
+        if (dragOffset > swipeThreshold) {
+          // Swiped right (previous card)
+          card.style.transition = 'transform 0.3s ease-in-out';
+          card.style.transform = `translateX(${card.offsetWidth}px) rotateY(10deg)`;
+          setTimeout(() => {
+            currentCardIndex = (currentCardIndex - 1 + displayedProducts.length) % displayedProducts.length;
+            detailsVisible = false;
+            renderFlashcardView();
+            isCardAnimating = false;
+          }, 300);
+        } else if (dragOffset < -swipeThreshold) {
+          // Swiped left (next card)
+          card.style.transition = 'transform 0.3s ease-in-out';
+          card.style.transform = `translateX(-${card.offsetWidth}px) rotateY(-10deg)`;
+          setTimeout(() => {
+            currentCardIndex = (currentCardIndex + 1) % displayedProducts.length;
+            detailsVisible = false;
+            renderFlashcardView();
+            isCardAnimating = false;
+          }, 300);
+        } else {
+          // Not a full swipe, snap back to center
+          card.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+          card.style.transform = 'translateX(0)';
+          isCardAnimating = false;
+        }
+      }
+      // Event listeners for switching views
+      flashcardBtn.addEventListener('click', () => {
+        currentView = 'flashcard';
+        setActiveButton(document.getElementById('view-buttons'), flashcardBtn);
+        shuffleArray(allProducts); // Shuffle cards for a new test
+        fetchAndRenderCards(googleSheetUrl);
+      });
+      listBtn.addEventListener('click', () => {
+        currentView = 'list';
+        setActiveButton(document.getElementById('view-buttons'), listBtn);
+        fetchAndRenderCards(googleSheetUrl);
+      });
+      quizBtn.addEventListener('click', () => {
+        currentView = 'quiz';
+        quizMode = 'allergen';
+        setActiveButton(document.getElementById('view-buttons'), quizBtn);
+        if (allProducts.length > 0) {
+          renderQuizView();
+        } else {
+          fetchAndRenderCards(googleSheetUrl);
+        }
+      });
+      fetchAndRenderCards(googleSheetUrl);
+    });
+  </script>
+</body>
+
+</html>
