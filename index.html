@@ -85,6 +85,12 @@
       </h1>
     </div>
 
+    <!-- DB Switcher Buttons (Новый раздел для переключения баз данных) -->
+    <div id="db-switcher" class="flex justify-center gap-4 mb-8">
+      <button id="db-chiko-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-amber-500 text-white shadow-lg">Чико</button>
+      <button id="db-chiko-new-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-200 text-gray-600">Чико New</button>
+    </div>
+
     <!-- Header -->
     <div class="text-center my-10 sm:my-16">
       <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-800">
@@ -143,7 +149,15 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const googleSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzcJMQjrWXO96NnjwHMwpj_m-vY_KkPAzVJcjeUc89QCrnE6EY_cm3VYwVxD7_i_x-IYk0g1_llqB4/pub?output=csv';
+      // 1. Константы для URL баз данных
+      const GOOGLE_SHEET_URLS = {
+        'chiko': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzcJMQjrWXO96NnjwHMwpj_m-vY_KkPAzVJcjeUc89QCrnE6EY_cm3VYwVxD7_i_x-IYk0g1_llqB4/pub?gid=0&single=true&output=csv',
+        'chiko-new': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzcJMQjrWXO96NnjwHMwpj_m-vY_KkPAzVJcjeUc89QCrnE6EY_cm3VYwVxD7_i_x-IYk0g1_llqB4/pub?gid=68396352&single=true&output=csv'
+      };
+
+      // 2. Переменная для отслеживания текущей активной БД
+      let currentDB = 'chiko'; // 'chiko' или 'chiko-new'
+
       const cardContainer = document.getElementById('card-container');
       const counterElement = document.getElementById('card-counter');
       const spinner = document.getElementById('loading-spinner');
@@ -160,6 +174,9 @@
       const quizOptionsContainer = document.getElementById('quiz-options');
       const nextQuizBtn = document.getElementById('next-quiz-btn');
       const showAnswerBtn = document.getElementById('show-answer-btn');
+      const dbChikoBtn = document.getElementById('db-chiko-btn');
+      const dbChikoNewBtn = document.getElementById('db-chiko-new-btn');
+
       let allProducts = [];
       let displayedProducts = [];
       let currentCardIndex = 0;
@@ -180,37 +197,45 @@
         let currentCell = '';
         const lines = text.split(/\r?\n/);
         if (lines.length === 0 || lines[0].trim() === '') return [];
+        // ВАЖНО: Приводим заголовки к нижнему регистру для универсального доступа
         const header = lines[0].split(',').map(h => h.trim().toLowerCase());
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i];
           if (line.trim() === '' && !inQuote) continue;
+          let cellStartIndex = 0;
+          let cellEndIndex = 0;
           for (let j = 0; j < line.length; j++) {
             const char = line[j];
             if (char === '"') {
               inQuote = !inQuote;
             } else if (char === ',' && !inQuote) {
-              currentRow.push(currentCell.trim());
-              currentCell = '';
-            } else {
-              currentCell += char;
+              currentCell = line.substring(cellStartIndex, j).trim().replace(/^"|"$/g, '');
+              currentRow.push(currentCell);
+              cellStartIndex = j + 1;
             }
           }
-          if (inQuote) {
-            currentCell += '\n';
-          } else {
-            currentRow.push(currentCell.trim());
-            if (currentRow.length === header.length) {
-              const product = {};
-              header.forEach((key, index) => {
-                product[key] = currentRow[index] || '';
-              });
-              if (product.name && product.image) {
-                results.push(product);
-              }
+          currentCell = line.substring(cellStartIndex).trim().replace(/^"|"$/g, '');
+          currentRow.push(currentCell);
+
+          if (currentRow.length === header.length) {
+            const product = {};
+            header.forEach((key, index) => {
+              product[key] = currentRow[index] || '';
+            });
+            
+            // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+            // Проверка наличия КЛЮЧЕВОГО поля - NAME.
+            // Изображение (product.image) теперь не является обязательным
+            // для включения карточки.
+            if (product.name && product.name.trim() !== '') {
+              // Дополнительная очистка image, чтобы не было 'undefined'
+              product.image = product.image || 'https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';
+              results.push(product);
             }
-            currentRow = [];
-            currentCell = '';
+            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
           }
+          currentRow = [];
+          currentCell = '';
         }
         return results;
       }
@@ -240,31 +265,38 @@
         const card = document.createElement('div');
         card.id = 'current-card';
         card.className = 'bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover cursor-pointer max-w-lg mx-auto';
+
+        // 3. Условное отображение раздела "Подача"
+        const servingSection = (currentDB === 'chiko') && product.serving ? `
+          <div class="flex items-start">
+              <div class="flex items-center flex-none w-28">
+                  <i class="fas fa-utensils text-green-500 text-lg mr-2"></i>
+                  <span class="font-medium text-gray-600">Подача:</span>
+              </div>
+              <span class="text-gray-800 ml-2 flex-1 whitespace-pre-wrap">${product.serving}</span>
+          </div>
+        ` : '';
+
         const detailsHtml = `
-                    <h2 class="text-xl font-semibold text-gray-900 mb-2">${product.name}</h2>
-                    <div id="details-section" class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
-                        <div class="flex items-start">
-                            <div class="flex items-center flex-none w-28">
-                                <i class="fas fa-exclamation-triangle text-amber-500 text-lg mr-2"></i>
-                                <span class="font-medium text-gray-600">Аллергены:</span>
-                            </div>
-                            <span class="text-gray-800 font-bold ml-2 flex-1 whitespace-pre-wrap">${product.allergen}</span>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="flex items-center flex-none w-28">
-                                <i class="fas fa-utensils text-green-500 text-lg mr-2"></i>
-                                <span class="font-medium text-gray-600">Подача:</span>
-                            </div>
-                            <span class="text-gray-800 ml-2 flex-1 whitespace-pre-wrap">${product.serving}</span>
-                        </div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">${product.name}</h2>
+            <div id="details-section" class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
+                <div class="flex items-start">
+                    <div class="flex items-center flex-none w-28">
+                        <i class="fas fa-exclamation-triangle text-amber-500 text-lg mr-2"></i>
+                        <span class="font-medium text-gray-600">Аллергены:</span>
                     </div>
-                `;
+                    <span class="text-gray-800 font-bold ml-2 flex-1 whitespace-pre-wrap">${product.allergen}</span>
+                </div>
+                ${servingSection}
+            </div>
+        `;
+
         card.innerHTML = `
-                    <div class="w-full h-56 bg-gray-200 rounded-2xl overflow-hidden mb-4 shadow-inner">
-                        <img src="${product.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';" alt="Изображение блюда" class="w-full h-full object-cover">
-                    </div>
-                    ${detailsVisible ? detailsHtml : ''}
-                `;
+            <div class="w-full h-56 bg-gray-200 rounded-2xl overflow-hidden mb-4 shadow-inner">
+                <img src="${product.image}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';" alt="Изображение блюда" class="w-full h-full object-cover">
+            </div>
+            ${detailsVisible ? detailsHtml : ''}
+        `;
         cardContainer.appendChild(card);
         card.addEventListener('click', () => {
           detailsVisible = !detailsVisible;
@@ -314,6 +346,17 @@
           return;
         }
         displayedProducts.forEach(product => {
+          // 4. Условное отображение раздела "Подача" для списка
+          const servingSection = (currentDB === 'chiko') && product.serving ? `
+            <div class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
+                <div class="flex items-center">
+                    <i class="fas fa-utensils text-green-500 text-lg mr-2"></i>
+                    <span class="font-medium text-gray-600">Подача:</span>
+                </div>
+                <p class="text-gray-800 whitespace-pre-wrap">${product.serving}</p>
+            </div>
+          ` : '';
+
           const card = document.createElement('div');
           card.className = 'bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover';
           card.innerHTML = `
@@ -333,13 +376,7 @@
                             </div>
 
                             <!-- Serving -->
-                            <div class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
-                                <div class="flex items-center">
-                                    <i class="fas fa-utensils text-green-500 text-lg mr-2"></i>
-                                    <span class="font-medium text-gray-600">Подача:</span>
-                                </div>
-                                <p class="text-gray-800 whitespace-pre-wrap">${product.serving}</p>
-                            </div>
+                            ${servingSection}
                         </div>
                     `;
           cardContainer.appendChild(card);
@@ -409,6 +446,7 @@
         nextQuizBtn.classList.remove('hidden');
         showAnswerBtn.classList.add('hidden'); // Hide the button after an answer is given
       }
+
       showAnswerBtn.addEventListener('click', () => {
         const imgContainer = document.getElementById('quiz-image-container');
         if (imgContainer) {
@@ -423,6 +461,7 @@
           }
         });
       });
+
       nextQuizBtn.addEventListener('click', () => {
         quizAnswered = false;
         allProducts.shift(); // Remove answered question
@@ -457,6 +496,21 @@
         }
       }
 
+      // 5. Функция для установки активной кнопки БД
+      function setActiveDBButton(dbName) {
+        dbChikoBtn.classList.remove('bg-amber-500', 'text-white', 'shadow-lg', 'bg-gray-200', 'text-gray-600');
+        dbChikoNewBtn.classList.remove('bg-amber-500', 'text-white', 'shadow-lg', 'bg-gray-200', 'text-gray-600');
+
+        if (dbName === 'chiko') {
+            dbChikoBtn.classList.add('bg-amber-500', 'text-white', 'shadow-lg');
+            dbChikoNewBtn.classList.add('bg-gray-200', 'text-gray-600');
+        } else {
+            dbChikoBtn.classList.add('bg-gray-200', 'text-gray-600');
+            dbChikoNewBtn.classList.add('bg-amber-500', 'text-white', 'shadow-lg');
+        }
+      }
+
+
       function createFilterButtons(categories) {
         filterButtonsContainer.innerHTML = '';
         categories.forEach(category => {
@@ -469,6 +523,11 @@
           });
           filterButtonsContainer.appendChild(button);
         });
+        // Устанавливаем первую кнопку как активную по умолчанию при рендере фильтров
+        if (filterButtonsContainer.firstElementChild) {
+          setActiveButton(filterButtonsContainer, filterButtonsContainer.firstElementChild);
+          filterCards(filterButtonsContainer.firstElementChild.textContent);
+        }
       }
 
       function searchCards() {
@@ -483,7 +542,16 @@
         detailsVisible = false;
         renderView();
       }
-      async function fetchAndRenderCards(url) {
+
+      // 6. Обновление fetchAndRenderCards для использования URL из активной БД
+      async function fetchAndRenderCards() {
+        const url = GOOGLE_SHEET_URLS[currentDB];
+        spinner.style.display = 'block';
+        cardContainer.innerHTML = '';
+        currentCardIndex = 0;
+        displayedProducts = [];
+        allProducts = [];
+
         try {
           const response = await fetch(url);
           if (!response.ok) {
@@ -493,22 +561,13 @@
           allProducts = parseCSV(csvText);
           displayedProducts = [...allProducts];
           spinner.style.display = 'none';
+
           if (allProducts.length > 0) {
             const categories = [...new Set(allProducts.map(p => p.category).filter(c => c))];
             createFilterButtons(categories);
             renderView();
+            searchInput.removeEventListener('input', searchCards); // Удаляем старый, если есть
             searchInput.addEventListener('input', searchCards);
-            // Button listeners for desktop
-            prevBtn.addEventListener('click', () => {
-              currentCardIndex = (currentCardIndex - 1 + displayedProducts.length) % displayedProducts.length;
-              detailsVisible = false;
-              renderFlashcardView();
-            });
-            nextBtn.addEventListener('click', () => {
-              currentCardIndex = (currentCardIndex + 1) % displayedProducts.length;
-              detailsVisible = false;
-              renderFlashcardView();
-            });
           } else {
             cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
           }
@@ -518,6 +577,7 @@
           cardContainer.innerHTML = '<p class="col-span-full text-center text-red-500 font-medium">Ошибка загрузки данных. Проверьте ссылку и доступ.</p>';
         }
       }
+
       // Carousel functions
       function startDrag(e) {
         if (isCardAnimating) return;
@@ -543,9 +603,10 @@
         const dragOffset = endX - startX;
         const swipeThreshold = 50;
         const card = document.getElementById('current-card');
+        card.style.transition = 'transform 0.3s ease-in-out';
+
         if (dragOffset > swipeThreshold) {
           // Swiped right (previous card)
-          card.style.transition = 'transform 0.3s ease-in-out';
           card.style.transform = `translateX(${card.offsetWidth}px) rotateY(10deg)`;
           setTimeout(() => {
             currentCardIndex = (currentCardIndex - 1 + displayedProducts.length) % displayedProducts.length;
@@ -555,7 +616,6 @@
           }, 300);
         } else if (dragOffset < -swipeThreshold) {
           // Swiped left (next card)
-          card.style.transition = 'transform 0.3s ease-in-out';
           card.style.transform = `translateX(-${card.offsetWidth}px) rotateY(-10deg)`;
           setTimeout(() => {
             currentCardIndex = (currentCardIndex + 1) % displayedProducts.length;
@@ -570,17 +630,35 @@
           isCardAnimating = false;
         }
       }
+
+      // 7. Обработчики для переключения БД
+      dbChikoBtn.addEventListener('click', () => {
+          if (currentDB !== 'chiko') {
+              currentDB = 'chiko';
+              setActiveDBButton('chiko');
+              fetchAndRenderCards();
+          }
+      });
+
+      dbChikoNewBtn.addEventListener('click', () => {
+          if (currentDB !== 'chiko-new') {
+              currentDB = 'chiko-new';
+              setActiveDBButton('chiko-new');
+              fetchAndRenderCards();
+          }
+      });
+
       // Event listeners for switching views
       flashcardBtn.addEventListener('click', () => {
         currentView = 'flashcard';
         setActiveButton(document.getElementById('view-buttons'), flashcardBtn);
         shuffleArray(allProducts); // Shuffle cards for a new test
-        fetchAndRenderCards(googleSheetUrl);
+        fetchAndRenderCards();
       });
       listBtn.addEventListener('click', () => {
         currentView = 'list';
         setActiveButton(document.getElementById('view-buttons'), listBtn);
-        fetchAndRenderCards(googleSheetUrl);
+        fetchAndRenderCards();
       });
       quizBtn.addEventListener('click', () => {
         currentView = 'quiz';
@@ -589,10 +667,13 @@
         if (allProducts.length > 0) {
           renderQuizView();
         } else {
-          fetchAndRenderCards(googleSheetUrl);
+          fetchAndRenderCards();
         }
       });
-      fetchAndRenderCards(googleSheetUrl);
+
+      // 8. Инициализация: загружаем данные "Чико" по умолчанию
+      setActiveDBButton('chiko');
+      fetchAndRenderCards();
     });
   </script>
 </body>
