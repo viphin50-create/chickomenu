@@ -85,7 +85,7 @@
       </h1>
     </div>
 
-    <!-- DB Switcher Buttons (Новый раздел для переключения баз данных) -->
+    <!-- DB Switcher Buttons -->
     <div id="db-switcher" class="flex justify-center gap-4 mb-8">
       <button id="db-chiko-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-amber-500 text-white shadow-lg">Чико</button>
       <button id="db-chiko-new-btn" class="px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-200 text-gray-600">Чико New</button>
@@ -134,7 +134,8 @@
         <button id="prev-btn" class="bg-amber-500 text-white rounded-full p-3 shadow-lg hover:bg-amber-600 focus:outline-none transition-all duration-300 transform hover:scale-110">
           <i class="fas fa-arrow-left"></i>
         </button>
-        <span id="card-counter" class="text-gray-600 font-medium text-lg"></span>
+        <!-- Счетчик скрыт по запросу пользователя -->
+        <span id="card-counter" class="text-gray-600 font-medium text-lg hidden"></span>
         <button id="next-btn" class="bg-amber-500 text-white rounded-full p-3 shadow-lg hover:bg-amber-600 focus:outline-none transition-all duration-300 transform hover:scale-110">
           <i class="fas fa-arrow-right"></i>
         </button>
@@ -149,10 +150,11 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Константы для URL баз данных
+      // 1. Константы для URL баз данных. 
+      // URL для 'chiko' и 'chiko-new' обновлены согласно запросу.
       const GOOGLE_SHEET_URLS = {
-        'chiko': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzcJMQjrWXO96NnjwHMwpj_m-vY_KkPAzVJcjeUc89QCrnE6EY_cm3VYwVxD7_i_x-IYk0g1_llqB4/pub?gid=0&single=true&output=csv',
-        'chiko-new': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRzcJMQjrWXO96NnjwHMwpj_m-vY_KkPAzVJcjeUc89QCrnE6EY_cm3VYwVxD7_i_x-IYk0g1_llqB4/pub?gid=68396352&single=true&output=csv'
+        'chiko': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=1916463250&single=true&output=csv',
+        'chiko-new': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=993893041&single=true&output=csv'
       };
 
       // 2. Переменная для отслеживания текущей активной БД
@@ -190,52 +192,105 @@
       let isDragging = false;
       let isCardAnimating = false;
 
+      // Утилита для задержки
+      const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+      /**
+       * Выполняет операцию fetch с экспоненциальной задержкой и повторными попытками.
+       * @param {string} url - URL для запроса.
+       * @param {number} retries - Максимальное количество попыток (по умолчанию 3).
+       * @returns {Promise<Response>} - Объект ответа fetch.
+       */
+      async function safeFetch(url, retries = 3) {
+          let lastError = null;
+
+          for (let i = 0; i < retries; i++) {
+              try {
+                  const response = await fetch(url);
+
+                  if (!response.ok) {
+                      throw new Error(`HTTP ошибка! Статус: ${response.status}`);
+                  }
+                  return response; // Успех
+              } catch (error) {
+                  lastError = error;
+                  console.error(`[ERROR] Попытка ${i + 1} загрузки данных провалилась:`, error.message);
+                  
+                  if (i < retries - 1) {
+                      const delay = Math.pow(2, i) * 1000 + (Math.random() * 500); // 1с, 2с, 4с + рандом
+                      await sleep(delay);
+                  }
+              }
+          }
+          throw new Error(`КРИТИЧЕСКАЯ ОШИБКА ЗАГРУЗКИ ДАННЫХ: ${lastError ? lastError.message : 'Неизвестная ошибка сети/API'}`);
+      }
+      
+      /**
+       * Парсит CSV-текст, делая заголовки столбцов универсальными.
+       * @param {string} text CSV-текст
+       * @returns {Array<Object>} Массив объектов продуктов.
+       */
       function parseCSV(text) {
         const results = [];
-        let inQuote = false;
-        let currentRow = [];
-        let currentCell = '';
-        const lines = text.split(/\r?\n/);
-        if (lines.length === 0 || lines[0].trim() === '') return [];
-        // ВАЖНО: Приводим заголовки к нижнему регистру для универсального доступа
-        const header = lines[0].split(',').map(h => h.trim().toLowerCase());
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i];
-          if (line.trim() === '' && !inQuote) continue;
-          let cellStartIndex = 0;
-          let cellEndIndex = 0;
-          for (let j = 0; j < line.length; j++) {
-            const char = line[j];
-            if (char === '"') {
-              inQuote = !inQuote;
-            } else if (char === ',' && !inQuote) {
-              currentCell = line.substring(cellStartIndex, j).trim().replace(/^"|"$/g, '');
-              currentRow.push(currentCell);
-              cellStartIndex = j + 1;
-            }
-          }
-          currentCell = line.substring(cellStartIndex).trim().replace(/^"|"$/g, '');
-          currentRow.push(currentCell);
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== ''); // Удаляем пустые строки
 
-          if (currentRow.length === header.length) {
-            const product = {};
-            header.forEach((key, index) => {
-              product[key] = currentRow[index] || '';
-            });
-            
-            // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-            // Проверка наличия КЛЮЧЕВОГО поля - NAME.
-            // Изображение (product.image) теперь не является обязательным
-            // для включения карточки.
-            if (product.name && product.name.trim() !== '') {
-              // Дополнительная очистка image, чтобы не было 'undefined'
-              product.image = product.image || 'https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';
-              results.push(product);
+        if (lines.length === 0) return [];
+        
+        // Извлекаем и очищаем заголовки
+        const headerLine = lines[0];
+        if (headerLine.indexOf(',') === -1) {
+            console.error("CSV-файл не содержит разделителей-запятых в заголовках. Проверьте публикацию таблицы.");
+            return [];
+        }
+        
+        const rawHeaders = headerLine.split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const headerMap = {}; 
+        
+        rawHeaders.forEach((rawHeader, index) => {
+            // Приводим к нижнему регистру и удаляем все, кроме букв и цифр для ключа
+            const cleanKey = rawHeader.toLowerCase().replace(/[^a-z0-9а-яё]/g, ''); 
+            headerMap[index] = cleanKey || `col${index}`; // Используем colX как запасной ключ
+        });
+
+        console.log('Заголовки столбцов, которые были обнаружены в таблице:', Object.values(headerMap).filter(v => v.startsWith('col') === false));
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            let inQuote = false;
+            let currentRow = [];
+            let cellStartIndex = 0;
+
+            // Улучшенная логика для разбиения на ячейки с учетом кавычек
+            for (let j = 0; j < line.length; j++) {
+                const char = line[j];
+                if (char === '"') {
+                    inQuote = !inQuote;
+                } else if (char === ',' && !inQuote) {
+                    let currentCell = line.substring(cellStartIndex, j).trim().replace(/^"|"$/g, '');
+                    currentRow.push(currentCell);
+                    cellStartIndex = j + 1;
+                }
             }
-            // --- КОНЕЦ ИЗМЕНЕНИЯ ---
-          }
-          currentRow = [];
-          currentCell = '';
+            let lastCell = line.substring(cellStartIndex).trim().replace(/^"|"$/g, '');
+            currentRow.push(lastCell);
+            
+            if (currentRow.length === rawHeaders.length) {
+                const product = {};
+                for(let k = 0; k < currentRow.length; k++) {
+                    const key = headerMap[k];
+                    const value = currentRow[k] || '';
+                    product[key] = value;
+                }
+
+                if (product.name && product.name.trim() !== '') {
+                    product.image = product.image || 'https://placehold.co/400x400/e2e8f0/64748b?text=Нет+изображения';
+                    product.serving = product.serving || '';
+                    // ИЗМЕНЕНИЕ: оставляем пустую строку, если данных нет
+                    product.category = product.category || '';
+                    product.allergen = product.allergen || '';
+                    results.push(product);
+                }
+            }
         }
         return results;
       }
@@ -256,17 +311,17 @@
         filterButtonsContainer.style.display = 'none';
         flashcardNav.style.display = 'flex';
         if (displayedProducts.length === 0) {
-          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения. Проверьте, что в таблице есть столбец "name".</p>';
+          // Удалено: counterElement.textContent = '0 / 0';
           return;
         }
         const product = displayedProducts[currentCardIndex];
-        counterElement.textContent = `${currentCardIndex + 1} / ${displayedProducts.length}`;
+        // Удалено: counterElement.textContent = `${currentCardIndex + 1} / ${displayedProducts.length}`;
         cardContainer.innerHTML = '';
         const card = document.createElement('div');
         card.id = 'current-card';
         card.className = 'bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover cursor-pointer max-w-lg mx-auto';
 
-        // 3. Условное отображение раздела "Подача"
         const servingSection = (currentDB === 'chiko') && product.serving ? `
           <div class="flex items-start">
               <div class="flex items-center flex-none w-28">
@@ -276,6 +331,8 @@
               <span class="text-gray-800 ml-2 flex-1 whitespace-pre-wrap">${product.serving}</span>
           </div>
         ` : '';
+        
+        const allergenDisplay = product.allergen || '';
 
         const detailsHtml = `
             <h2 class="text-xl font-semibold text-gray-900 mb-2">${product.name}</h2>
@@ -285,7 +342,7 @@
                         <i class="fas fa-exclamation-triangle text-amber-500 text-lg mr-2"></i>
                         <span class="font-medium text-gray-600">Аллергены:</span>
                     </div>
-                    <span class="text-gray-800 font-bold ml-2 flex-1 whitespace-pre-wrap">${product.allergen}</span>
+                    <span class="text-gray-800 font-bold ml-2 flex-1 whitespace-pre-wrap">${allergenDisplay}</span>
                 </div>
                 ${servingSection}
             </div>
@@ -342,11 +399,10 @@
         cardContainer.innerHTML = '';
         filterButtonsContainer.style.display = 'flex';
         if (displayedProducts.length === 0) {
-          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения. Проверьте, что в таблице есть столбец "name".</p>';
           return;
         }
         displayedProducts.forEach(product => {
-          // 4. Условное отображение раздела "Подача" для списка
           const servingSection = (currentDB === 'chiko') && product.serving ? `
             <div class="w-full text-left bg-gray-100 p-3 rounded-2xl space-y-2 text-sm mt-4">
                 <div class="flex items-center">
@@ -357,6 +413,8 @@
             </div>
           ` : '';
 
+          const allergenDisplay = product.allergen || '';
+          
           const card = document.createElement('div');
           card.className = 'bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover';
           card.innerHTML = `
@@ -372,7 +430,7 @@
                                     <i class="fas fa-exclamation-triangle text-amber-500 text-lg mr-2"></i>
                                     <span class="font-medium text-gray-600">Аллергены:</span>
                                 </div>
-                                <p class="text-gray-800 font-bold whitespace-pre-wrap">${product.allergen}</p>
+                                <p class="text-gray-800 font-bold whitespace-pre-wrap">${allergenDisplay}</p>
                             </div>
 
                             <!-- Serving -->
@@ -391,17 +449,38 @@
         quizOptionsContainer.innerHTML = '';
         nextQuizBtn.classList.add('hidden');
         showAnswerBtn.classList.remove('hidden');
-        if (allProducts.length < 4) {
-          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Недостаточно данных для теста. Добавьте как минимум 4 блюда.</p>';
+        
+        // Используем только продукты, у которых явно указаны аллергены (непустая строка)
+        const quizProducts = allProducts.filter(p => p.name && p.allergen && p.allergen.trim() !== ''); 
+        
+        if (quizProducts.length < 4) {
+          cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Недостаточно данных для теста. Добавьте как минимум 4 блюда с указанными аллергенами.</p>';
           return;
         }
-        shuffleArray(allProducts);
-        const currentProduct = allProducts[0];
-        let allAnswers = [];
-        viewMessage.textContent = 'Выберите правильный аллерген';
-        const wrongAnswers = allProducts.slice(1, 4).map(p => p.allergen);
-        allAnswers = [currentProduct.allergen, ...wrongAnswers];
+        
+        // Перемешиваем и выбираем первый для вопроса
+        shuffleArray(quizProducts);
+        const currentProduct = quizProducts[0];
+        
+        let wrongAnswers = new Set();
+        let i = 1;
+        while (wrongAnswers.size < 3 && i < quizProducts.length) {
+            if (quizProducts[i].allergen !== currentProduct.allergen) {
+                wrongAnswers.add(quizProducts[i].allergen);
+            }
+            i++;
+        }
+        
+        // Заполняем оставшиеся неправильные ответы, если уникальных не хватает
+        while (wrongAnswers.size < 3) {
+             wrongAnswers.add(`Неизвестный аллерген ${wrongAnswers.size + 1}`);
+        }
+        
+        let allAnswers = [currentProduct.allergen, ...Array.from(wrongAnswers)];
         shuffleArray(allAnswers);
+
+        viewMessage.textContent = 'Выберите правильный аллерген';
+        
         cardContainer.innerHTML = `
                     <div class="bg-white rounded-3xl shadow-lg transition-all duration-300 p-4 sm:p-6 flex flex-col items-center text-center card-animation transform hover:shadow-2xl card-3d-hover cursor-pointer max-w-lg mx-auto">
                         <h2 class="text-xl font-semibold text-gray-900 mb-2">${currentProduct.name}</h2>
@@ -417,14 +496,18 @@
           button.textContent = answer;
           button.className = 'px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 bg-gray-200 text-gray-600 shadow-md';
           const correctAnswer = currentProduct.allergen;
-          button.addEventListener('click', () => handleQuizAnswer(button, answer === correctAnswer));
+          button.addEventListener('click', () => handleQuizAnswer(button, answer === correctAnswer, correctAnswer));
           quizOptionsContainer.appendChild(button);
         });
+        allProducts = quizProducts; // Обновляем список для quiz, чтобы исключить выбранный элемент.
       }
 
-      function handleQuizAnswer(button, isCorrect) {
+      function handleQuizAnswer(button, isCorrect, correctAnswer) {
         if (quizAnswered) return;
         quizAnswered = true;
+        // Удаляем все обработчики, чтобы предотвратить повторное нажатие
+        quizOptionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        
         if (isCorrect) {
           button.classList.remove('bg-gray-200', 'text-gray-600');
           button.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600');
@@ -436,9 +519,8 @@
           // Highlight correct answer
           const allButtons = quizOptionsContainer.querySelectorAll('button');
           allButtons.forEach(btn => {
-            const correctAnswer = quizMode === 'allergen' ? allProducts[0].allergen : allProducts[0].name;
-            if (btn.textContent === correctAnswer) {
-              btn.classList.remove('bg-gray-200');
+            if (btn.textContent.trim() === correctAnswer.trim()) {
+              btn.classList.remove('bg-gray-200', 'bg-red-500', 'text-gray-600');
               btn.classList.add('bg-green-500', 'text-white');
             }
           });
@@ -452,19 +534,24 @@
         if (imgContainer) {
           imgContainer.classList.remove('hidden');
         }
+        // Получаем правильный ответ из первого элемента в текущем (неперемешанном) списке allProducts
+        const correctAnswer = allProducts[0].allergen; 
         const allButtons = quizOptionsContainer.querySelectorAll('button');
         allButtons.forEach(btn => {
-          const correctAnswer = allProducts[0].allergen;
-          if (btn.textContent === correctAnswer) {
-            btn.classList.remove('bg-gray-200');
-            btn.classList.add('bg-green-500', 'text-white');
-          }
+            if (btn.textContent.trim() === correctAnswer.trim()) {
+                btn.classList.remove('bg-gray-200', 'bg-red-500', 'text-gray-600');
+                btn.classList.add('bg-green-500', 'text-white');
+            }
+            btn.disabled = true; // Отключаем кнопки после показа ответа
         });
+        quizAnswered = true; 
+        nextQuizBtn.classList.remove('hidden');
+        showAnswerBtn.classList.add('hidden');
       });
 
       nextQuizBtn.addEventListener('click', () => {
         quizAnswered = false;
-        allProducts.shift(); // Remove answered question
+        allProducts.shift(); // Удаляем отвеченный вопрос
         renderQuizView();
       });
 
@@ -479,7 +566,13 @@
       }
 
       function filterCards(category) {
-        displayedProducts = allProducts.filter(p => p.category === category);
+        // Если категория 'Общее' (которое мы используем для отображения пустых строк), 
+        // фильтруем по продуктам с пустой категорией ''
+        if (category === 'Общее') {
+             displayedProducts = allProducts.filter(p => !p.category || p.category.trim() === '');
+        } else {
+             displayedProducts = allProducts.filter(p => p.category === category);
+        }
         currentCardIndex = 0;
         detailsVisible = false;
         renderView();
@@ -496,7 +589,6 @@
         }
       }
 
-      // 5. Функция для установки активной кнопки БД
       function setActiveDBButton(dbName) {
         dbChikoBtn.classList.remove('bg-amber-500', 'text-white', 'shadow-lg', 'bg-gray-200', 'text-gray-600');
         dbChikoNewBtn.classList.remove('bg-amber-500', 'text-white', 'shadow-lg', 'bg-gray-200', 'text-gray-600');
@@ -511,9 +603,18 @@
       }
 
 
-      function createFilterButtons(categories) {
+      function createFilterButtons(products) {
         filterButtonsContainer.innerHTML = '';
-        categories.forEach(category => {
+        // Заменяем пустые категории на 'Общее' для удобства отображения
+        const allCategories = products.map(p => p.category || 'Общее').filter(c => c);
+        const uniqueCategories = [...new Set(allCategories)].sort((a, b) => {
+            // Гарантируем, что 'Общее' всегда идет первым
+            if (a === 'Общее') return -1;
+            if (b === 'Общее') return 1;
+            return a.localeCompare(b);
+        });
+
+        uniqueCategories.forEach(category => {
           const button = document.createElement('button');
           button.textContent = category;
           button.className = 'px-4 py-2 rounded-full font-semibold transition-all duration-300 transform hover:scale-105';
@@ -523,7 +624,7 @@
           });
           filterButtonsContainer.appendChild(button);
         });
-        // Устанавливаем первую кнопку как активную по умолчанию при рендере фильтров
+
         if (filterButtonsContainer.firstElementChild) {
           setActiveButton(filterButtonsContainer, filterButtonsContainer.firstElementChild);
           filterCards(filterButtonsContainer.firstElementChild.textContent);
@@ -543,7 +644,7 @@
         renderView();
       }
 
-      // 6. Обновление fetchAndRenderCards для использования URL из активной БД
+      // Обновленная функция fetchAndRenderCards, использующая safeFetch
       async function fetchAndRenderCards() {
         const url = GOOGLE_SHEET_URLS[currentDB];
         spinner.style.display = 'block';
@@ -553,34 +654,32 @@
         allProducts = [];
 
         try {
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error('Ошибка сети при загрузке данных.');
-          }
+          // Используем safeFetch с повторными попытками
+          const response = await safeFetch(url, 3);
+          
           const csvText = await response.text();
           allProducts = parseCSV(csvText);
           displayedProducts = [...allProducts];
           spinner.style.display = 'none';
 
           if (allProducts.length > 0) {
-            const categories = [...new Set(allProducts.map(p => p.category).filter(c => c))];
-            createFilterButtons(categories);
+            createFilterButtons(allProducts);
             renderView();
             searchInput.removeEventListener('input', searchCards); // Удаляем старый, если есть
             searchInput.addEventListener('input', searchCards);
           } else {
-            cardContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 font-medium">Нет данных для отображения.</p>';
+            cardContainer.innerHTML = '<p class="col-span-full text-center text-red-500 font-medium">Ошибка парсинга данных. Проверьте консоль (F12) и убедитесь, что в таблице есть столбец "name".</p>';
           }
         } catch (error) {
-          console.error('Ошибка загрузки данных:', error);
+          console.error(error);
           spinner.style.display = 'none';
-          cardContainer.innerHTML = '<p class="col-span-full text-center text-red-500 font-medium">Ошибка загрузки данных. Проверьте ссылку и доступ.</p>';
+          cardContainer.innerHTML = `<p class="col-span-full text-center text-red-500 font-medium">КРИТИЧЕСКАЯ ОШИБКА ЗАГРУЗКИ ДАННЫХ: ${error.message}. Убедитесь, что Google Таблица опубликована как CSV.</p>`;
         }
       }
 
       // Carousel functions
       function startDrag(e) {
-        if (isCardAnimating) return;
+        if (currentView !== 'flashcard' || isCardAnimating) return;
         isDragging = true;
         startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
         const card = document.getElementById('current-card');
@@ -596,17 +695,17 @@
       }
 
       function endDrag(e) {
-        if (!isDragging) return;
+        if (!isDragging || currentView !== 'flashcard') return;
         isDragging = false;
         isCardAnimating = true;
         const endX = e.type.includes('mouse') ? e.pageX : e.changedTouches[0].pageX;
         const dragOffset = endX - startX;
-        const swipeThreshold = 50;
         const card = document.getElementById('current-card');
+        const swipeThreshold = card.offsetWidth * 0.2; 
+        
         card.style.transition = 'transform 0.3s ease-in-out';
 
         if (dragOffset > swipeThreshold) {
-          // Swiped right (previous card)
           card.style.transform = `translateX(${card.offsetWidth}px) rotateY(10deg)`;
           setTimeout(() => {
             currentCardIndex = (currentCardIndex - 1 + displayedProducts.length) % displayedProducts.length;
@@ -615,7 +714,6 @@
             isCardAnimating = false;
           }, 300);
         } else if (dragOffset < -swipeThreshold) {
-          // Swiped left (next card)
           card.style.transform = `translateX(-${card.offsetWidth}px) rotateY(-10deg)`;
           setTimeout(() => {
             currentCardIndex = (currentCardIndex + 1) % displayedProducts.length;
@@ -624,14 +722,28 @@
             isCardAnimating = false;
           }, 300);
         } else {
-          // Not a full swipe, snap back to center
           card.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
           card.style.transform = 'translateX(0)';
           isCardAnimating = false;
         }
       }
 
-      // 7. Обработчики для переключения БД
+      // Event listeners for navigation buttons (Desktop)
+      prevBtn.addEventListener('click', () => {
+        if (displayedProducts.length === 0) return;
+        currentCardIndex = (currentCardIndex - 1 + displayedProducts.length) % displayedProducts.length;
+        detailsVisible = false;
+        renderFlashcardView();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (displayedProducts.length === 0) return;
+        currentCardIndex = (currentCardIndex + 1) % displayedProducts.length;
+        detailsVisible = false;
+        renderFlashcardView();
+      });
+
+      // Обработчики для переключения БД
       dbChikoBtn.addEventListener('click', () => {
           if (currentDB !== 'chiko') {
               currentDB = 'chiko';
@@ -652,8 +764,13 @@
       flashcardBtn.addEventListener('click', () => {
         currentView = 'flashcard';
         setActiveButton(document.getElementById('view-buttons'), flashcardBtn);
-        shuffleArray(allProducts); // Shuffle cards for a new test
-        fetchAndRenderCards();
+        if (filterButtonsContainer.style.display !== 'none' && filterButtonsContainer.querySelector('.bg-amber-500')) {
+             const activeCategory = filterButtonsContainer.querySelector('.bg-amber-500').textContent;
+             filterCards(activeCategory); 
+        } else {
+             shuffleArray(displayedProducts); 
+             renderFlashcardView();
+        }
       });
       listBtn.addEventListener('click', () => {
         currentView = 'list';
@@ -664,14 +781,12 @@
         currentView = 'quiz';
         quizMode = 'allergen';
         setActiveButton(document.getElementById('view-buttons'), quizBtn);
-        if (allProducts.length > 0) {
-          renderQuizView();
-        } else {
-          fetchAndRenderCards();
-        }
+        fetchAndRenderCards().then(() => {
+            renderQuizView();
+        });
       });
 
-      // 8. Инициализация: загружаем данные "Чико" по умолчанию
+      // Инициализация
       setActiveDBButton('chiko');
       fetchAndRenderCards();
     });
