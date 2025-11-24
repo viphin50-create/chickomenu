@@ -2,525 +2,675 @@
 <html lang="ru">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Чико New - Меню, Обучение, Тест</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <style>
-    /* Google Font: Inter */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чико New - Меню, Обучение, Тест</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        /* Google Font: Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
-    body {
-      font-family: 'Inter', sans-serif;
-      /* Очень светлый серый фон */
-      background: #F8F8F8;
-      min-height: 100vh;
-      overflow-x: hidden;
-      color: #333;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Очень светлый серый фон */
+            background: #F8F8F8;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #333;
+        }
 
-    /* Стили скроллбара */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
+        /* Стили скроллбара */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-    }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
 
-    ::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
-    }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
 
-    /* Анимация плавного появления */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
+        /* Анимация плавного появления */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .animate-fade-in {
-      animation: fadeInUp 0.5s ease-out forwards;
-    }
+        .animate-fade-in {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
 
-    /* Кнопки фильтров и поиска с эффектом стекла */
-    .glass-btn {
-      background: rgba(240, 240, 240, 0.7);
-      backdrop-filter: blur(8px);
-      /* Увеличенное размытие для более заметного эффекта */
-      border: 1px solid rgba(200, 200, 200, 0.8);
-      color: #333;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+        /* Кнопки фильтров и поиска с эффектом стекла */
+        .glass-btn {
+            background: rgba(240, 240, 240, 0.7);
+            backdrop-filter: blur(8px);
+            /* Увеличенное размытие для более заметного эффекта */
+            border: 1px solid rgba(200, 200, 200, 0.8);
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-    .glass-btn:hover {
-      background: rgba(230, 230, 230, 0.9);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-    }
+        .glass-btn:hover {
+            background: rgba(230, 230, 230, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
 
-    .glass-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset;
-    }
+        .glass-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) inset;
+        }
 
-    .glass-btn.active {
-      background: #FF5E62;
-      /* Активный фон - яркий цвет бренда */
-      color: white;
-      font-weight: 800;
-      border: 1px solid #FF5E62;
-    }
+        .glass-btn.active {
+            background: #FF5E62;
+            /* Активный фон - яркий цвет бренда */
+            color: white;
+            font-weight: 800;
+            border: 1px solid #FF5E62;
+        }
 
-    /* Стили для модального окна */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 100;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      animation: fadeIn 0.3s forwards;
-    }
+        /* --- Стили для модального окна --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s forwards;
+        }
 
-    .modal-content {
-      background: rgba(255, 255, 255, 0.85);
-      /* Полупрозрачный фон */
-      backdrop-filter: blur(10px);
-      /* Эффект сильного стекла */
-      margin: 10% auto;
-      padding: 2rem;
-      border-radius: 1.5rem;
-      width: 90%;
-      max-width: 500px;
-      position: relative;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-      animation: slideIn 0.3s forwards;
-    }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.85);
+            /* Полупрозрачный фон */
+            backdrop-filter: blur(10px);
+            /* Эффект сильного стекла */
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.3s forwards;
+        }
 
-    /* --- Стили для навигации --- */
-    .nav-link {
-      color: #6b7280;
-      transition: color 0.3s, border-bottom 0.3s;
-      padding-bottom: 4px;
-      font-size: 1.125rem;
-    }
+        /* --- Стили для навигации --- */
+        .nav-link {
+            color: #6b7280;
+            transition: color 0.3s, border-bottom 0.3s;
+            padding-bottom: 4px;
+            font-size: 1.125rem;
+        }
 
-    .nav-link:hover {
-      color: #FF5E62;
-    }
+        .nav-link:hover {
+            color: #FF5E62;
+        }
 
-    .active-nav-link {
-      color: #FF5E62;
-      border-bottom: 4px solid #FF5E62;
-      font-weight: 700;
-    }
+        .active-nav-link {
+            color: #FF5E62;
+            border-bottom: 4px solid #FF5E62;
+            font-weight: 700;
+        }
 
-    .page-content {
-      min-height: 50vh;
-    }
+        .page-content {
+            min-height: 50vh;
+        }
 
-    .hidden {
-      display: none !important;
-    }
+        .hidden {
+            display: none !important;
+        }
 
-    /* Стиль для кнопок материалов и теста */
-    .training-button,
-    .quiz-start-btn {
-      background-color: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(8px);
-      border: 1px solid #FF5E62;
-      color: #FF5E62;
-      font-weight: 700;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(255, 94, 98, 0.2);
-    }
+        /* Стиль для кнопок материалов и теста */
+        .training-button,
+        .quiz-start-btn {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid #FF5E62;
+            color: #FF5E62;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 94, 98, 0.2);
+        }
 
-    .training-button:hover,
-    .quiz-start-btn:hover {
-      background-color: #FF5E62;
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(255, 94, 98, 0.4);
-    }
+        .training-button:hover,
+        .quiz-start-btn:hover {
+            background-color: #FF5E62;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 94, 98, 0.4);
+        }
 
+        /* --- Стили для Бокового Меню --- */
+        .sidebar {
+            /* Устанавливаем максимальную ширину для анимации "Push" на десктопе */
+            max-width: 10rem; /* 160px */
+            min-height: 70vh;
+            /* Обеспечиваем плавный переход для всех свойств (max-width, opacity, transform) */
+            transition: all 0.3s ease-in-out; 
+            /* Стандартная ширина */
+            width: 10rem;
+        }
+        
+        /* Класс для закрытого состояния на десктопе (Push) */
+        @media (min-width: 768px) {
+            .sidebar-closed-desktop {
+                max-width: 0 !important;
+                padding: 0 !important;
+                opacity: 0 !important;
+                overflow: hidden !important;
+                margin-right: 0 !important; /* Убираем margin, если он есть */
+            }
+        }
 
-    /* --- Стили для Тестирования --- */
-    .quiz-option {
-      @apply text-lg font-semibold py-4 px-6 rounded-xl border-2 cursor-pointer transition-all duration-200 shadow-md flex items-center justify-between;
-      border-color: #e5e7eb;
-      /* border-gray-200 */
-      background-color: #ffffff;
-      /* bg-white */
-    }
+        /* Класс для скрытого состояния на мобильных (Overlay) */
+        .sidebar-mobile-closed {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(255, 94, 98, 0.05); /* Light red hover */
+            color: #FF5E62;
+        }
+        
+        /* --- Стили для Тестирования --- */
+        .quiz-option {
+            @apply text-lg font-semibold py-4 px-6 rounded-xl border-2 cursor-pointer transition-all duration-200 shadow-md flex items-center justify-between;
+            border-color: #e5e7eb;
+            /* border-gray-200 */
+            background-color: #ffffff;
+            /* bg-white */
+        }
 
-    .quiz-option:hover:not(.disabled) {
-      @apply border-[#FF5E62] shadow-lg;
-    }
+        .quiz-option:hover:not(.disabled) {
+            @apply border-[#FF5E62] shadow-lg;
+        }
 
-    .quiz-option.correct {
-      @apply bg-green-100 border-green-500 text-green-700 shadow-xl;
-    }
+        .quiz-option.correct {
+            @apply bg-green-100 border-green-500 text-green-700 shadow-xl;
+        }
 
-    .quiz-option.incorrect {
-      @apply bg-red-100 border-red-500 text-red-700 shadow-xl;
-    }
+        .quiz-option.incorrect {
+            @apply bg-red-100 border-red-500 text-red-700 shadow-xl;
+        }
 
-    .quiz-option.disabled {
-      pointer-events: none;
-    }
+        .quiz-option.disabled {
+            pointer-events: none;
+        }
 
-    .quiz-result-icon {
-      font-size: 1.5rem;
-      margin-left: 1rem;
-    }
-  </style>
+        .quiz-result-icon {
+            font-size: 1.5rem;
+            margin-left: 1rem;
+        }
+    </style>
 </head>
 
 <body class="p-4 sm:p-8 flex flex-col items-center justify-center">
-  <div class="max-w-5xl mx-auto w-full">
+    <div class="max-w-5xl mx-auto w-full">
 
-    <!-- Заголовок -->
-    <div class="flex justify-center mt-4 mb-4">
-      <h1 class="text-5xl sm:text-6xl font-extrabold text-gray-800 drop-shadow-lg tracking-wide">
-        ЧИКО <span class="text-red-500 text-3xl align-top">New</span>
-      </h1>
+        <!-- Заголовок -->
+        <div class="flex justify-center mt-4 mb-4">
+            <h1 class="text-5xl sm:text-6xl font-extrabold text-gray-800 drop-shadow-lg tracking-wide">
+                ЧИКО <span class="text-red-500 text-3xl align-top">New</span>
+            </h1>
+        </div>
+
+        <!-- Навигационные ссылки -->
+        <div id="navigation-links" class="flex justify-center gap-6 mb-8 mt-4 font-bold">
+            <button class="nav-link active-nav-link" onclick="showPage('menu')">Меню</button>
+            <button class="nav-link" onclick="showPage('training')">Обучающий материал</button>
+            <button class="nav-link" onclick="showPage('testing')">Тестирование</button>
+        </div>
     </div>
 
-    <!-- Навигационные ссылки -->
-    <div id="navigation-links" class="flex justify-center gap-6 mb-8 mt-4 font-bold">
-      <button class="nav-link active-nav-link" onclick="showPage('menu')">Меню</button>
-      <button class="nav-link" onclick="showPage('training')">Обучающий материал</button>
-      <button class="nav-link" onclick="showPage('testing')">Тестирование</button>
+    <!-- ОСНОВНОЙ КОНТЕНТ (Sidebar + Content) -->
+    <div class="flex flex-1 w-full max-w-7xl mx-auto mt-4 overflow-hidden">
+        
+        <!-- OVERLAY для мобильного меню (скрыт по умолчанию) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-10 hidden" onclick="closeSidebar()"></div>
+
+        <!-- Боковое меню для Категорий (только для страницы Меню) -->
+        <aside id="sidebar" class="sidebar bg-white p-4 shadow-xl flex-shrink-0 z-20 rounded-xl overflow-y-auto 
+                                   fixed inset-y-0 left-0 sidebar-mobile-closed 
+                                   md:static md:block md:w-[10rem] md:p-4 md:opacity-100">
+            <!-- Содержимое будет сгенерировано JS -->
+        </aside>
+
+        <!-- Контейнер для всех страниц (Меню, Обучение, Тест) -->
+        <div class="flex-1 min-h-screen px-4 md:px-6">
+
+            <!-- КОНТЕНТ СТРАНИЦЫ МЕНЮ -->
+            <div id="menu-content" class="page-content flex flex-col items-center w-full">
+                <!-- Поиск -->
+                <div id="search-container" class="w-full mb-6 max-w-4xl mx-auto flex items-center gap-4">
+                    <!-- Кнопка-переключатель для всех устройств (СЕЙЧАС ВИДЕН ВЕЗДЕ) -->
+                    <button id="sidebar-toggle" onclick="toggleSidebar()" class="p-3 rounded-xl glass-btn text-xl flex-shrink-0">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="relative rounded-full shadow-lg flex-grow">
+                        <input type="text" id="search-input" placeholder="Поиск по названию или аллергенам..."
+                            class="glass-btn w-full px-6 py-3 rounded-full pl-12 transition-all duration-300 text-gray-800 placeholder-gray-500">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Основная область контента (Список) -->
+                <div class="flex flex-col items-center w-full">
+
+                    <!-- Индикатор загрузки -->
+                    <div id="loading-spinner" class="text-center py-12">
+                        <svg class="animate-spin h-12 w-12 text-[#FF5E62] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.965l3-2.674zm13.715-6.195A7.962 7.962 0 0120 12h4c0-3.042-1.135-5.824-3-7.965l-3 2.674zM12 20a8 8 0 008-8h4c0 6.627-5.373 12-12 12v-4z"></path>
+                        </svg>
+                        <p class="mt-4 text-gray-600 font-medium text-lg">Загрузка меню...</p>
+                    </div>
+
+                    <!-- Область отображения списка -->
+                    <div id="card-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full px-4">
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- КОНТЕНТ СТРАНИЦЫ ОБУЧАЮЩИЙ МАТЕРИАЛ -->
+            <div id="training-content" class="page-content hidden">
+                <div class="max-w-4xl mx-auto p-6 bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/90">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-red-200 text-center">
+                        База Обучающих Материалов
+                    </h2>
+
+                    <!-- Контейнер для кнопок, загружаемых из Google Sheets -->
+                    <div id="training-links-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Сюда будут вставлены кнопки -->
+                    </div>
+
+                    <!-- Индикатор загрузки для обучающего материала -->
+                    <div id="training-loading-spinner" class="text-center py-12 hidden">
+                        <svg class="animate-spin h-12 w-12 text-[#FF5E62] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.965l3-2.674zm13.715-6.195A7.962 7.962 0 0120 12h4c0-3.042-1.135-5.824-3-7.965l-3 2.674zM12 20a8 8 0 008-8h4c0 6.627-5.373 12-12 12v-4z"></path>
+                        </svg>
+                        <p class="mt-4 text-gray-600 font-medium text-lg">Загрузка материалов...</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- КОНТЕНТ СТРАНИЦЫ ТЕСТИРОВАНИЕ (НОВЫЙ) -->
+            <div id="testing-content" class="page-content hidden">
+                <div class="max-w-2xl mx-auto p-6 bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/90">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-red-200 text-center">
+                        Тест на знание Аллергенов (10 вопросов)
+                    </h2>
+
+                    <!-- 1. Начальный экран / Загрузка -->
+                    <div id="quiz-start-screen" class="text-center py-12">
+                        <p id="quiz-load-status" class="text-gray-600 font-medium text-lg mb-6">
+                            Загрузка данных меню для викторины...
+                        </p>
+                        <button id="start-quiz-btn" onclick="startQuiz()"
+                            class="quiz-start-btn px-8 py-3 rounded-full text-xl disabled:opacity-50" disabled>
+                            <i class="fas fa-play mr-2"></i> Начать Тест
+                        </button>
+                    </div>
+
+                    <!-- 2. Экран викторины -->
+                    <div id="quiz-game-screen" class="hidden space-y-6">
+                        <!-- Прогресс -->
+                        <div class="flex justify-between items-center text-gray-600 font-medium">
+                            <p>Вопрос: <span id="current-question-index">0</span> / 10</p>
+                            <p>Верно: <span id="correct-count">0</span> / Неверно: <span id="incorrect-count">0</span></p>
+                        </div>
+                        <!-- Вопрос (Флеш-карточка) -->
+                        <div
+                            class="bg-white border-2 border-red-300 rounded-xl p-8 text-center shadow-inner h-40 flex items-center justify-center">
+                            <h3 id="quiz-question-dish" class="text-3xl font-extrabold text-gray-800"></h3>
+                        </div>
+                        <!-- Варианты ответов -->
+                        <div id="quiz-options-container" class="grid grid-cols-1 gap-3">
+                            <!-- Кнопки ответов будут здесь -->
+                        </div>
+                    </div>
+
+                    <!-- 3. Экран результатов -->
+                    <div id="quiz-results-screen" class="hidden text-center py-12 space-y-6">
+                        <h3 class="text-4xl font-extrabold text-gray-800">Результаты Теста</h3>
+                        <p class="text-lg text-gray-700">Ваш счет:</p>
+                        <p id="final-score" class="text-6xl font-black text-red-500"></p>
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-200">
+                            <h4 class="text-xl font-bold text-red-700 mb-2">Твой Титул:</h4>
+                            <p id="quiz-title" class="text-2xl font-extrabold text-gray-800"></p>
+                        </div>
+                        <button onclick="startQuiz(true)"
+                            class="quiz-start-btn px-8 py-3 rounded-full text-xl w-full sm:w-auto mt-4">
+                            <i class="fas fa-redo-alt mr-2"></i> Запустить Снова
+                        </button>
+                    </div>
+
+                    <!-- Индикатор загрузки для тестирования (на случай проблем с меню) -->
+                    <div id="quiz-loading-spinner" class="text-center py-12 hidden">
+                        <p class="mt-4 text-gray-600 font-medium text-lg">Загрузка данных меню...</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <!-- КОНТЕНТ СТРАНИЦЫ МЕНЮ -->
-    <div id="menu-content" class="page-content">
-      <!-- Поиск -->
-      <div id="search-container" class="w-full mb-6 max-w-2xl mx-auto">
-        <div class="relative rounded-full shadow-lg">
-          <input type="text" id="search-input" placeholder="Поиск по названию или аллергенам..."
-            class="glass-btn w-full px-6 py-3 rounded-full pl-12 transition-all duration-300 text-gray-800 placeholder-gray-500">
-          <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-xl"></i>
+    <!-- Модальное окно для детального просмотра -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn absolute top-4 right-6 text-4xl text-gray-600 hover:text-red-500 transition-colors" onclick="closeModal()">&times;</button>
+            <div id="modal-body" class="space-y-4 pt-6">
+                <!-- Содержимое будет вставлено сюда через JS -->
+            </div>
         </div>
-      </div>
-
-      <!-- Кнопки-фильтры по категориям -->
-      <div id="filter-buttons" class="flex flex-wrap justify-center gap-2 mb-8"></div>
-
-      <!-- Основная область контента (Список) -->
-      <div class="flex flex-col items-center w-full">
-
-        <!-- Индикатор загрузки -->
-        <div id="loading-spinner" class="text-center py-12">
-          <svg class="animate-spin h-12 w-12 text-[#FF5E62] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.965l3-2.674zm13.715-6.195A7.962 7.962 0 0120 12h4c0-3.042-1.135-5.824-3-7.965l-3 2.674zM12 20a8 8 0 008-8h4c0 6.627-5.373 12-12 12v-4z"></path>
-          </svg>
-          <p class="mt-4 text-gray-600 font-medium text-lg">Загрузка меню...</p>
-        </div>
-
-        <!-- Область отображения списка -->
-        <div id="card-container" class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-6xl px-4">
-        </div>
-
-      </div>
     </div>
 
-    <!-- КОНТЕНТ СТРАНИЦЫ ОБУЧАЮЩИЙ МАТЕРИАЛ -->
-    <div id="training-content" class="page-content hidden">
-      <div class="max-w-4xl mx-auto p-6 bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/90">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-red-200 text-center">
-          База Обучающих Материалов
-        </h2>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ссылка на таблицу Google Sheets для МЕНЮ в формате CSV
+            const SHEET_URL_MENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=993893041&single=true&output=csv';
 
-        <!-- Контейнер для кнопок, загружаемых из Google Sheets -->
-        <div id="training-links-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Сюда будут вставлены кнопки -->
-        </div>
+            // Ссылка на таблицу Google Sheets для ОБУЧАЮЩЕГО МАТЕРИАЛА в формате CSV
+            const SHEET_URL_TRAINING = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=1664366590&single=true&output=csv';
 
-        <!-- Индикатор загрузки для обучающего материала -->
-        <div id="training-loading-spinner" class="text-center py-12 hidden">
-          <svg class="animate-spin h-12 w-12 text-[#FF5E62] mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.965l3-2.674zm13.715-6.195A7.962 7.962 0 0120 12h4c0-3.042-1.135-5.824-3-7.965l-3 2.674zM12 20a8 8 0 008-8h4c0 6.627-5.373 12-12 12v-4z"></path>
-          </svg>
-          <p class="mt-4 text-gray-600 font-medium text-lg">Загрузка материалов...</p>
-        </div>
+            const cardContainer = document.getElementById('card-container');
+            const menuSpinner = document.getElementById('loading-spinner');
+            const trainingLinksContainer = document.getElementById('training-links-container');
+            const trainingSpinner = document.getElementById('training-loading-spinner');
+            
+            const searchInput = document.getElementById('search-input');
+            const productModal = document.getElementById('product-modal');
+            const modalBody = document.getElementById('modal-body');
 
-      </div>
-    </div>
+            const menuContent = document.getElementById('menu-content');
+            const trainingContent = document.getElementById('training-content');
+            const testingContent = document.getElementById('testing-content');
 
-    <!-- КОНТЕНТ СТРАНИЦЫ ТЕСТИРОВАНИЕ (НОВЫЙ) -->
-    <div id="testing-content" class="page-content hidden">
-      <div class="max-w-2xl mx-auto p-6 bg-white/70 backdrop-blur-md rounded-2xl shadow-xl border border-white/90">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2 border-red-200 text-center">
-          Тест на знание Аллергенов (10 вопросов)
-        </h2>
+            // Элементы для бокового меню
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            // Элементы для тестирования
+            const quizStartScreen = document.getElementById('quiz-start-screen');
+            const quizGameScreen = document.getElementById('quiz-game-screen');
+            const quizResultsScreen = document.getElementById('quiz-results-screen');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const quizLoadStatus = document.getElementById('quiz-load-status');
 
-        <!-- 1. Начальный экран / Загрузка -->
-        <div id="quiz-start-screen" class="text-center py-12">
-          <p id="quiz-load-status" class="text-gray-600 font-medium text-lg mb-6">
-            Загрузка данных меню для викторины...
-          </p>
-          <button id="start-quiz-btn" onclick="startQuiz()"
-            class="quiz-start-btn px-8 py-3 rounded-full text-xl disabled:opacity-50" disabled>
-            <i class="fas fa-play mr-2"></i> Начать Тест
-          </button>
-        </div>
+            // Глобальные переменные для данных и теста
+            let allProducts = [];
+            let allAllergens = new Set();
+            let productsByCategory = {}; // Хранилище продуктов по категориям
+            let displayedProducts = [];
+            let allTrainingMaterials = [];
 
-        <!-- 2. Экран викторины -->
-        <div id="quiz-game-screen" class="hidden space-y-6">
-          <!-- Прогресс -->
-          <div class="flex justify-between items-center text-gray-600 font-medium">
-            <p>Вопрос: <span id="current-question-index">0</span> / 10</p>
-            <p>Верно: <span id="correct-count">0</span> / Неверно: <span id="incorrect-count">0</span></p>
-          </div>
-          <!-- Вопрос (Флеш-карточка) -->
-          <div
-            class="bg-white border-2 border-red-300 rounded-xl p-8 text-center shadow-inner h-40 flex items-center justify-center">
-            <h3 id="quiz-question-dish" class="text-3xl font-extrabold text-gray-800"></h3>
-          </div>
-          <!-- Варианты ответов -->
-          <div id="quiz-options-container" class="grid grid-cols-1 gap-3">
-            <!-- Кнопки ответов будут здесь -->
-          </div>
-        </div>
-
-        <!-- 3. Экран результатов -->
-        <div id="quiz-results-screen" class="hidden text-center py-12 space-y-6">
-          <h3 class="text-4xl font-extrabold text-gray-800">Результаты Теста</h3>
-          <p class="text-lg text-gray-700">Ваш счет:</p>
-          <p id="final-score" class="text-6xl font-black text-red-500"></p>
-          <div class="bg-red-50 p-4 rounded-xl border border-red-200">
-            <h4 class="text-xl font-bold text-red-700 mb-2">Твой Титул:</h4>
-            <p id="quiz-title" class="text-2xl font-extrabold text-gray-800"></p>
-          </div>
-          <button onclick="startQuiz(true)"
-            class="quiz-start-btn px-8 py-3 rounded-full text-xl w-full sm:w-auto mt-4">
-            <i class="fas fa-redo-alt mr-2"></i> Запустить Снова
-          </button>
-        </div>
-
-        <!-- Индикатор загрузки для тестирования (на случай проблем с меню) -->
-        <div id="quiz-loading-spinner" class="text-center py-12 hidden">
-          <p class="mt-4 text-gray-600 font-medium text-lg">Загрузка данных меню...</p>
-        </div>
-
-      </div>
-    </div>
+            // Состояние викторины
+            let quizCards = [];
+            let currentCardIndex = 0;
+            let correctAnswers = 0;
+            let incorrectAnswers = 0;
+            const TOTAL_QUESTIONS = 10;
+            
+            // Состояние боковой панели (для десктопа)
+            let isSidebarOpen = window.innerWidth >= 768; // По умолчанию открыто на десктопе
 
 
-  </div>
+            // --- UTILITIES (Остались без изменений) ---
 
-  <!-- Модальное окно для детального просмотра -->
-  <div id="product-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal()">&times;</span>
-      <div id="modal-body" class="space-y-4">
-        <!-- Содержимое будет вставлено сюда через JS -->
-      </div>
-    </div>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Ссылка на таблицу Google Sheets для МЕНЮ в формате CSV
-      const SHEET_URL_MENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=993893041&single=true&output=csv';
-
-      // Ссылка на таблицу Google Sheets для ОБУЧАЮЩЕГО МАТЕРИАЛА в формате CSV
-      const SHEET_URL_TRAINING = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=1664366590&single=true&output=csv';
-
-      const cardContainer = document.getElementById('card-container');
-      const menuSpinner = document.getElementById('loading-spinner');
-      const trainingLinksContainer = document.getElementById('training-links-container');
-      const trainingSpinner = document.getElementById('training-loading-spinner');
-      const filterButtonsContainer = document.getElementById('filter-buttons');
-      const searchInput = document.getElementById('search-input');
-      const productModal = document.getElementById('product-modal');
-      const modalBody = document.getElementById('modal-body');
-
-      const menuContent = document.getElementById('menu-content');
-      const trainingContent = document.getElementById('training-content');
-      const testingContent = document.getElementById('testing-content');
-
-      // Элементы для тестирования
-      const quizStartScreen = document.getElementById('quiz-start-screen');
-      const quizGameScreen = document.getElementById('quiz-game-screen');
-      const quizResultsScreen = document.getElementById('quiz-results-screen');
-      const startQuizBtn = document.getElementById('start-quiz-btn');
-      const quizLoadStatus = document.getElementById('quiz-load-status');
-
-      // Глобальные переменные для данных и теста
-      let allProducts = [];
-      let allAllergens = new Set();
-      let productsByCategory = {};
-      let displayedProducts = [];
-      let allTrainingMaterials = [];
-
-      // Состояние викторины
-      let quizCards = [];
-      let currentCardIndex = 0;
-      let correctAnswers = 0;
-      let incorrectAnswers = 0;
-      const TOTAL_QUESTIONS = 10;
-
-
-      // --- UTILITIES ---
-
-      /**
-       * Выполняет fetch-запрос с логикой экспоненциальной задержки.
-       */
-      async function fetchWithRetry(url, maxRetries = 3, delay = 1000) {
-        for (let i = 0; i < maxRetries; i++) {
-          try {
-            const res = await fetch(url);
-            if (!res.ok) {
-              throw new Error(`HTTP error! Status: ${res.status}`);
+            /**
+             * Выполняет fetch-запрос с логикой экспоненциальной задержки.
+             */
+            async function fetchWithRetry(url, maxRetries = 3, delay = 1000) {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const res = await fetch(url);
+                        if (!res.ok) {
+                            throw new Error(`HTTP error! Status: ${res.status}`);
+                        }
+                        return res;
+                    } catch (error) {
+                        console.error(`Attempt ${i + 1} failed for ${url}:`, error);
+                        if (i < maxRetries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
             }
-            return res;
-          } catch (error) {
-            console.error(`Attempt ${i + 1} failed for ${url}:`, error);
-            if (i < maxRetries - 1) {
-              await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-            } else {
-              throw error;
+
+            /**
+             * Парсит CSV текст из Google Sheets. (Осталось без изменений)
+             */
+            function parseCSV(text, mode) {
+                const results = [];
+                const lines = text.split(/\r?\n/).filter(line => line.trim());
+
+                if (lines.length === 0) return [];
+
+                const splitCSVLine = (line) => {
+                    const rowData = [];
+                    let currentCell = '';
+                    let inQuote = false;
+
+                    for (let j = 0; j < line.length; j++) {
+                        const char = line[j];
+
+                        if (char === '"') {
+                            if (j + 1 < line.length && line[j + 1] === '"') {
+                                currentCell += '"';
+                                j++;
+                            } else {
+                                inQuote = !inQuote;
+                            }
+                        } else if (char === ',' && !inQuote) {
+                            rowData.push(currentCell);
+                            currentCell = '';
+                        } else {
+                            currentCell += char;
+                        }
+                    }
+                    rowData.push(currentCell);
+
+                    return rowData.map(cell => {
+                        let cleanCell = cell;
+                        if (cleanCell.startsWith('"') && cleanCell.endsWith('"')) {
+                            cleanCell = cleanCell.substring(1, cleanCell.length - 1);
+                        }
+                        return cleanCell.replace(/""/g, '"').trim();
+                    });
+                };
+
+                const rawHeader = splitCSVLine(lines[0]);
+                const header = rawHeader.map(h => h.toLowerCase().trim());
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    const lineNumber = i + 1;
+                    const rowData = splitCSVLine(line);
+
+                    if (rowData.length === header.length) {
+                        const item = {};
+                        header.forEach((key, index) => {
+                            item[key] = rowData[index] || '';
+                        });
+
+                        if (mode === 'menu') {
+                            const pName = item['name'] || item['название'] || item['блюдо'] || '';
+                            const pAllergen = item['allergen'] || item['аллергены'] || 'Нет данных';
+
+                            if (pName) {
+                                item.display_name = pName;
+                                item.display_image = item['image'] || item['ссылка на фото'] || item['фото'] || 'https://placehold.co/400x600/FFFFFF/FF5E62?text=Нет+Фото';
+                                item.display_desc = item['описание'] || item['подача'] || 'Описание отсутствует';
+                                item.display_allergen = pAllergen;
+                                item.display_category = item['category'] || item['категория'] || 'Общее';
+                                results.push(item);
+                            } else {
+                                console.warn(`Line ${lineNumber} skipped (Menu): Product name field is empty.`);
+                            }
+                        } else if (mode === 'training') {
+                            const tName = item['название'] || item['title'] || '';
+                            const tLink = item['ссылка'] || item['link'] || '';
+
+                            if (tName && tLink) {
+                                item.display_name = tName;
+                                item.display_link = tLink;
+                                results.push(item);
+                            } else {
+                                console.warn(`Line ${lineNumber} skipped (Training): Missing Title or Link.`);
+                            }
+                        }
+                    } else {
+                        console.warn(`Line ${lineNumber} skipped: Column count mismatch.`);
+                    }
+                }
+                return results;
             }
-          }
-        }
-      }
 
-      /**
-       * Парсит CSV текст из Google Sheets.
-       */
-      function parseCSV(text, mode) {
-        const results = [];
-        const lines = text.split(/\r?\n/).filter(line => line.trim());
-
-        if (lines.length === 0) return [];
-
-        const splitCSVLine = (line) => {
-          const rowData = [];
-          let currentCell = '';
-          let inQuote = false;
-
-          for (let j = 0; j < line.length; j++) {
-            const char = line[j];
-
-            if (char === '"') {
-              if (j + 1 < line.length && line[j + 1] === '"') {
-                currentCell += '"';
-                j++;
-              } else {
-                inQuote = !inQuote;
-              }
-            } else if (char === ',' && !inQuote) {
-              rowData.push(currentCell);
-              currentCell = '';
-            } else {
-              currentCell += char;
+            /**
+             * Функция перемешивания массива (Алгоритм Фишера-Йетса). (Осталась без изменений)
+             */
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
             }
-          }
-          rowData.push(currentCell);
-
-          return rowData.map(cell => {
-            let cleanCell = cell;
-            if (cleanCell.startsWith('"') && cleanCell.endsWith('"')) {
-              cleanCell = cleanCell.substring(1, cleanCell.length - 1);
+            
+            // --- SIDEBAR FUNCTIONS (ОБНОВЛЕНО) ---
+            
+            /**
+             * Управляет состоянием бокового меню: открывает/закрывает.
+             * Использует разные классы для мобильной (fixed/transform) и десктопной (static/max-width) версий.
+             */
+            window.toggleSidebar = function() {
+                if (window.innerWidth < 768) {
+                    // МОБИЛЬНЫЙ (Overlay)
+                    if (sidebar.classList.contains('sidebar-mobile-closed')) {
+                        sidebar.classList.remove('sidebar-mobile-closed');
+                        sidebarOverlay.classList.remove('hidden');
+                    } else {
+                        sidebar.classList.add('sidebar-mobile-closed');
+                        sidebarOverlay.classList.add('hidden');
+                    }
+                } else {
+                    // ДЕСКТОП (Pushing/Collapsing)
+                    isSidebarOpen = !isSidebarOpen;
+                    if (isSidebarOpen) {
+                        sidebar.classList.remove('sidebar-closed-desktop');
+                    } else {
+                        sidebar.classList.add('sidebar-closed-desktop');
+                    }
+                }
             }
-            return cleanCell.replace(/""/g, '"').trim();
-          });
-        };
 
-        const rawHeader = splitCSVLine(lines[0]);
-        const header = rawHeader.map(h => h.toLowerCase().trim());
-
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i];
-          const lineNumber = i + 1;
-          const rowData = splitCSVLine(line);
-
-          if (rowData.length === header.length) {
-            const item = {};
-            header.forEach((key, index) => {
-              item[key] = rowData[index] || '';
-            });
-
-            if (mode === 'menu') {
-              const pName = item['name'] || item['название'] || item['блюдо'] || '';
-              const pAllergen = item['allergen'] || item['аллергены'] || 'Нет данных';
-
-              if (pName && pAllergen !== 'Нет данных') { // Исключаем блюда без аллергенов для теста
-                item.display_name = pName;
-                item.display_image = item['image'] || item['ссылка на фото'] || item['фото'] || 'https://placehold.co/400x600/FFFFFF/FF5E62?text=Нет+Фото';
-                item.display_desc = item['описание'] || item['подача'] || 'Описание отсутствует';
-                item.display_allergen = pAllergen;
-                item.display_category = item['category'] || item['категория'] || 'Общее';
-                results.push(item);
-              } else if (!pName) {
-                console.warn(`Line ${lineNumber} skipped (Menu): Product name field is empty.`);
-              }
-            } else if (mode === 'training') {
-              const tName = item['название'] || item['title'] || '';
-              const tLink = item['ссылка'] || item['link'] || '';
-
-              if (tName && tLink) {
-                item.display_name = tName;
-                item.display_link = tLink;
-                results.push(item);
-              } else {
-                console.warn(`Line ${lineNumber} skipped (Training): Missing Title or Link.`);
-              }
+            // Функция закрытия (используется кликом по оверлею на мобильных)
+            window.closeSidebar = function() {
+                 if (window.innerWidth < 768) {
+                     sidebar.classList.add('sidebar-mobile-closed');
+                     sidebarOverlay.classList.add('hidden');
+                 }
             }
-          } else {
-            console.warn(`Line ${lineNumber} skipped: Column count mismatch.`);
-          }
-        }
-        return results;
-      }
+            
+            /**
+             * Генерирует и рендерит боковое меню категорий. (УБРАНЫ ИКОНКИ)
+             */
+            function renderSidebar() {
+                // Создаем массив уникальных категорий, включая "Все"
+                const categories = ['Все', ...Object.keys(productsByCategory)].filter(c => c && c !== 'Нет данных');
 
-      /**
-       * Функция перемешивания массива (Алгоритм Фишера-Йетса).
-       */
-      function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-      }
+                let html = `
+                    <h3 class="text-xl font-extrabold text-gray-800 mb-4 border-b pb-2 border-red-200">
+                        Категории
+                    </h3>
+                    <nav class="space-y-1">
+                `;
 
-      // --- MENU VIEW FUNCTIONS (Unchanged) ---
-      function renderListView() {
-        if (displayedProducts.length === 0) {
-          cardContainer.innerHTML = '<p class="col-span-full text-gray-800 text-center text-xl font-bold">Блюда не найдены</p>';
-          return;
-        }
+                categories.forEach(cat => {
+                    const productCount = cat === 'Все' ? allProducts.length : productsByCategory[cat]?.length || 0;
 
-        const html = displayedProducts.map((product, index) => `
-					<div class="bg-white/80 backdrop-blur-md border border-white/90 rounded-2xl overflow-hidden shadow-xl flex flex-col animate-fade-in hover:scale-[1.02] transition-all duration-300 cursor-pointer" 
+                    // Убраны иконки, оставлен только текст
+                    html += `
+                        <button data-category="${cat}"
+                                class="sidebar-link flex items-center justify-between w-full p-3 text-base font-semibold text-gray-700 hover:text-[#FF5E62] rounded-xl transition duration-150 ease-in-out whitespace-nowrap">
+                            <span class="flex items-center">
+                                ${cat}
+                            </span>
+                            <span class="text-xs bg-red-100/70 text-red-700 px-2 py-0.5 rounded-full">${productCount}</span>
+                        </button>
+                    `;
+                });
+                
+                html += '</nav>';
+                sidebar.innerHTML = html;
+
+                // 1. Устанавливаем обработчики кликов
+                document.querySelectorAll('.sidebar-link').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const selectedCategory = e.currentTarget.getAttribute('data-category');
+                        
+                        // Удаляем активный класс со всех кнопок
+                        document.querySelectorAll('.sidebar-link').forEach(b => {
+                            b.classList.remove('active-sidebar-link', 'bg-red-100', 'text-[#FF5E62]', 'font-bold');
+                        });
+                        
+                        // Добавляем активный класс на текущую кнопку
+                        e.currentTarget.classList.add('active-sidebar-link', 'bg-red-100', 'text-[#FF5E62]', 'font-bold');
+
+                        // Применяем фильтрацию
+                        filterCards(selectedCategory);
+                        
+                        // Закрываем sidebar на мобильных
+                        if (window.innerWidth < 768) {
+                            closeSidebar(); 
+                        }
+                    });
+                });
+
+                // 2. Устанавливаем 'Все' как активную категорию по умолчанию
+                document.querySelector('.sidebar-link[data-category="Все"]')?.classList.add('active-sidebar-link', 'bg-red-100', 'text-[#FF5E62]', 'font-bold');
+            }
+
+            // --- MENU VIEW FUNCTIONS (Остались без изменений) ---
+            function renderListView() {
+                if (displayedProducts.length === 0) {
+                    cardContainer.innerHTML = '<p class="col-span-full text-gray-800 text-center text-xl font-bold">Блюда не найдены</p>';
+                    return;
+                }
+
+                const html = displayedProducts.map((product, index) => `
+					<div class="bg-white/80 backdrop-blur-md border border-white/90 rounded-2xl overflow-hidden shadow-xl flex flex-col animate-fade-in hover:scale-[1.02] transition-all duration-300 cursor-pointer"
 							onclick="openModal(${index})">
 						<div class="h-48 overflow-hidden relative">
-							<img src="${product.display_image}" onerror="this.src='https://placehold.co/400x600/FFFFFF/FF5E62?text=Фото+нет'" class="w-full h-full object-cover" loading="lazy">
+							<img src="${product.display_image}" onerror="this.src='https://placehold.co/400x600/FFFFFF/FF5E62?text=Нет+Фото'" class="w-full h-full object-cover" loading="lazy">
 							<span class="absolute top-2 right-2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm font-semibold">
 								${product.display_category}
 							</span>
@@ -535,69 +685,63 @@
 					</div>
 				`).join('');
 
-        cardContainer.innerHTML = html;
-      }
+                cardContainer.innerHTML = html;
+            }
 
-      function createFilterButtons(products) {
-        const categories = ['Все', ...new Set(products.map(p => p.display_category).filter(c => c))];
-        filterButtonsContainer.innerHTML = '';
 
-        categories.forEach(cat => {
-          const btn = document.createElement('button');
-          btn.textContent = cat;
-          btn.className = 'glass-btn px-4 py-1 rounded-full text-sm font-medium whitespace-nowrap';
-          if (cat === 'Все') btn.classList.add('active');
+            /**
+             * Фильтрует карточки по категории и поисковому запросу. (Осталась без изменений)
+             */
+            function filterCards(category = null) {
+                const searchValue = searchInput.value.toLowerCase();
+                
+                let currentCategory = category || document.querySelector('.sidebar-link.active-sidebar-link')?.getAttribute('data-category') || 'Все';
+                
+                if (category === null) {
+                    if (document.querySelector('.sidebar-link.active-sidebar-link')) {
+                         currentCategory = document.querySelector('.sidebar-link.active-sidebar-link').getAttribute('data-category');
+                    }
+                }
 
-          btn.addEventListener('click', (e) => {
-            document.querySelectorAll('#filter-buttons button').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            filterCards(cat);
-          });
-          filterButtonsContainer.appendChild(btn);
-        });
-      }
 
-      function filterCards(category) {
-        const searchValue = searchInput.value.toLowerCase();
+                let filteredByCategory = currentCategory === 'Все' ? allProducts :
+                    allProducts.filter(p => p.display_category === currentCategory);
 
-        let filteredByCategory = category === 'Все' ? allProducts :
-          allProducts.filter(p => p.display_category === category);
+                displayedProducts = filteredByCategory.filter(p =>
+                    p.display_name.toLowerCase().includes(searchValue) ||
+                    p.display_allergen.toLowerCase().includes(searchValue)
+                );
 
-        displayedProducts = filteredByCategory.filter(p =>
-          p.display_name.toLowerCase().includes(searchValue) ||
-          p.display_allergen.toLowerCase().includes(searchValue)
-        );
+                renderListView();
+            }
 
-        renderListView();
-      }
+            // --- TRAINING VIEW FUNCTIONS (Остались без изменений) ---
+            function renderTrainingButtons() {
+                trainingLinksContainer.innerHTML = '';
 
-      // --- TRAINING VIEW FUNCTIONS (Unchanged) ---
-      function renderTrainingButtons() {
-        trainingLinksContainer.innerHTML = '';
+                if (allTrainingMaterials.length === 0) {
+                    trainingLinksContainer.innerHTML = '<p class="col-span-full text-gray-800 text-center text-lg mt-8">Нет доступных обучающих материалов. Проверьте ссылку на Google Sheet и заголовки столбцов ("Название" и "ссылка").</p>';
+                    return;
+                }
 
-        if (allTrainingMaterials.length === 0) {
-          trainingLinksContainer.innerHTML = '<p class="col-span-full text-gray-800 text-center text-lg mt-8">Нет доступных обучающих материалов. Проверьте ссылку на Google Sheet и заголовки столбцов ("Название" и "ссылка").</p>';
-          return;
-        }
-
-        const html = allTrainingMaterials.map(material => `
-					<a href="${material.display_link}" target="_blank" rel="noopener noreferrer" 
+                const html = allTrainingMaterials.map(material => `
+					<a href="${material.display_link}" target="_blank" rel="noopener noreferrer"
 						class="training-button flex items-center justify-between p-4 rounded-xl shadow-lg transition-all duration-300 animate-fade-in">
 						<span class="text-lg truncate">${material.display_name}</span>
 						<i class="fas fa-arrow-right ml-4"></i>
 					</a>
 				`).join('');
 
-        trainingLinksContainer.innerHTML = html;
-      }
+                trainingLinksContainer.innerHTML = html;
+            }
 
-      // --- MODAL FUNCTIONS (Unchanged) ---
-      window.openModal = function (index) {
-        const product = displayedProducts[index];
-        if (!product) return;
+            // --- MODAL FUNCTIONS (Остались без изменений) ---
+            window.openModal = function (index) {
+                const product = displayedProducts[index];
+                if (!product) return;
 
-        modalBody.innerHTML = `
-					<img src="${product.display_image}" onerror="this.src='https://placehold.co/400x600/FFFFFF/FF5E62?text=Нет+Фото'" 
+                modalBody.innerHTML = `
+					<img src="${product.display_image}" onerror="this.src='https://placehold.co/400x600/FFFFFF/FF5E62?text=Нет+Фото'"
 							class="w-full h-auto rounded-xl mb-4 shadow-lg object-cover max-h-64">
 					
 					<div class="text-center mb-4">
@@ -623,316 +767,321 @@
 						</div>
 					</div>
 				`;
-        productModal.style.display = 'block';
-      }
-
-      window.closeModal = function () {
-        productModal.style.display = 'none';
-      }
-
-      window.onclick = function (event) {
-        if (event.target == productModal) {
-          closeModal();
-        }
-      }
-
-      /**
-       * Переключает отображение страниц (Меню, Обучающий материал, Тестирование).
-       */
-      window.showPage = function (pageId) {
-        const navButtons = document.querySelectorAll('.nav-link');
-        const contents = [menuContent, trainingContent, testingContent];
-
-        navButtons.forEach(btn => btn.classList.remove('active-nav-link'));
-
-        // Скрываем все страницы
-        contents.forEach(content => content.classList.add('hidden'));
-
-        // Показываем нужную страницу и делаем активной кнопку
-        document.querySelector(`button[onclick="showPage('${pageId}')"]`).classList.add('active-nav-link');
-
-        if (pageId === 'menu') {
-          menuContent.classList.remove('hidden');
-          searchInput.value = '';
-          const activeFilter = document.querySelector('#filter-buttons button.active')?.textContent || 'Все';
-          filterCards(activeFilter);
-        } else if (pageId === 'training') {
-          trainingContent.classList.remove('hidden');
-          loadTrainingData();
-        } else if (pageId === 'testing') {
-          testingContent.classList.remove('hidden');
-          // При переходе на страницу тестирования, проверяем готовность данных
-          if (allProducts.length === 0) {
-            document.getElementById('quiz-loading-spinner').classList.remove('hidden');
-            quizStartScreen.classList.add('hidden');
-          } else {
-            document.getElementById('quiz-loading-spinner').classList.add('hidden');
-            quizStartScreen.classList.remove('hidden');
-          }
-          // Сброс экрана при входе
-          quizGameScreen.classList.add('hidden');
-          quizResultsScreen.classList.add('hidden');
-        }
-      }
-
-
-      // --- QUIZ LOGIC ---
-
-      /**
-       * Подготавливает 10 случайных карточек для викторины с 4 вариантами ответов.
-       */
-      function prepareQuizCards() {
-        if (allProducts.length < 10 || allAllergens.size < 4) {
-          console.error("Недостаточно данных для теста.");
-          quizLoadStatus.textContent = 'Ошибка: Недостаточно блюд с уникальными аллергенами (нужно >10).';
-          startQuizBtn.disabled = true;
-          return [];
-        }
-
-        // 1. Выбираем 10 случайных уникальных блюд для вопросов
-        const productsForQuiz = shuffleArray([...allProducts])
-          .slice(0, TOTAL_QUESTIONS);
-
-        const quizSet = productsForQuiz.map(product => {
-          const correctAnswer = product.display_allergen;
-          const category = product.display_category;
-
-          // 2. Ищем аллергены-отвлекающие факторы из той же категории
-          const categoryAllergens = productsByCategory[category] ?
-            [...new Set(productsByCategory[category].map(p => p.display_allergen))] : [];
-
-          // Отвлекающие факторы, исключая правильный ответ
-          let distractors = categoryAllergens.filter(a => a !== correctAnswer);
-
-          // 3. Если отвлекающих факторов недостаточно, берем из общего пула
-          if (distractors.length < 3) {
-            const allOtherAllergens = [...allAllergens].filter(a => a !== correctAnswer && !distractors.includes(a));
-            // Добавляем до 3 уникальных отвлекающих факторов
-            distractors = [...distractors, ...shuffleArray(allOtherAllergens)].slice(0, 3);
-          } else {
-            // Если больше 3, выбираем 3 случайных
-            distractors = shuffleArray(distractors).slice(0, 3);
-          }
-
-          // 4. Формируем 4 варианта ответов (правильный + 3 отвлекающих)
-          const options = shuffleArray([correctAnswer, ...distractors]);
-
-          return {
-            question: product.display_name,
-            correctAnswer: correctAnswer,
-            options: options
-          };
-        });
-
-        return quizSet;
-      }
-
-      /**
-       * Начинает викторину.
-       * @param {boolean} isRestart - Флаг для перезапуска теста.
-       */
-      window.startQuiz = function (isRestart = false) {
-        if (allProducts.length === 0) {
-          // Если данные не загрузились, пробуем еще раз
-          quizLoadStatus.textContent = 'Пожалуйста, дождитесь загрузки данных меню.';
-          return;
-        }
-
-        quizCards = prepareQuizCards();
-        currentCardIndex = 0;
-        correctAnswers = 0;
-        incorrectAnswers = 0;
-
-        quizStartScreen.classList.add('hidden');
-        quizResultsScreen.classList.add('hidden');
-        quizGameScreen.classList.remove('hidden');
-
-        displayCard();
-      }
-
-      /**
-       * Отрисовывает текущую карточку вопроса и варианты ответов.
-       */
-      function displayCard() {
-        if (currentCardIndex >= TOTAL_QUESTIONS) {
-          showResults();
-          return;
-        }
-
-        const card = quizCards[currentCardIndex];
-        document.getElementById('current-question-index').textContent = currentCardIndex + 1;
-        document.getElementById('correct-count').textContent = correctAnswers;
-        document.getElementById('incorrect-count').textContent = incorrectAnswers;
-
-        document.getElementById('quiz-question-dish').textContent = card.question;
-
-        const optionsContainer = document.getElementById('quiz-options-container');
-        optionsContainer.innerHTML = '';
-
-        card.options.forEach(option => {
-          const button = document.createElement('button');
-          button.textContent = option;
-          button.className = 'quiz-option text-left';
-          button.setAttribute('data-answer', option);
-          button.onclick = () => handleAnswer(button, option, card.correctAnswer);
-          optionsContainer.appendChild(button);
-        });
-      }
-
-      /**
-       * Обрабатывает выбор ответа пользователем.
-       */
-      function handleAnswer(button, selectedAnswer, correctAnswer) {
-        // Отключаем все кнопки после первого ответа
-        document.querySelectorAll('.quiz-option').forEach(btn => btn.classList.add('disabled'));
-
-        const icon = document.createElement('i');
-        icon.classList.add('quiz-result-icon');
-
-        if (selectedAnswer === correctAnswer) {
-          button.classList.add('correct');
-          icon.classList.add('fas', 'fa-check');
-          correctAnswers++;
-        } else {
-          button.classList.add('incorrect');
-          icon.classList.add('fas', 'fa-times');
-          incorrectAnswers++;
-
-          // Подсвечиваем правильный ответ
-          document.querySelectorAll('.quiz-option').forEach(btn => {
-            if (btn.getAttribute('data-answer') === correctAnswer) {
-              btn.classList.add('correct');
+                productModal.style.display = 'block';
             }
-          });
-        }
 
-        button.appendChild(icon);
-
-        // Обновляем счетчик
-        document.getElementById('correct-count').textContent = correctAnswers;
-        document.getElementById('incorrect-count').textContent = incorrectAnswers;
-
-        // Переходим к следующему вопросу через 1.5 секунды
-        setTimeout(() => {
-          currentCardIndex++;
-          displayCard();
-        }, 1500);
-      }
-
-      /**
-       * Определяет титул на основе результатов.
-       */
-      function getQuizTitle(score) {
-        if (score === TOTAL_QUESTIONS) {
-          return '🏆 Абсолютный Молодец! 🏆';
-        } else if (score >= TOTAL_QUESTIONS / 2) {
-          return 'Неплохо, но можно лучше! 😉';
-        } else {
-          return 'Давай постараемся еще раз! 💪';
-        }
-      }
-
-      /**
-       * Отображает итоговые результаты викторины.
-       */
-      function showResults() {
-        quizGameScreen.classList.add('hidden');
-        quizResultsScreen.classList.remove('hidden');
-
-        document.getElementById('final-score').textContent = `${correctAnswers} / ${TOTAL_QUESTIONS}`;
-        document.getElementById('quiz-title').textContent = getQuizTitle(correctAnswers);
-      }
-
-
-      // --- FETCH DATA FOR MENU ---
-      async function loadMenuData() {
-        menuSpinner.style.display = 'block';
-        cardContainer.innerHTML = '';
-        try {
-          const res = await fetchWithRetry(SHEET_URL_MENU);
-          const text = await res.text();
-
-          allProducts = parseCSV(text, 'menu');
-
-          if (allProducts.length === 0) {
-            throw new Error('No valid product data found in the sheet.');
-          }
-
-          // Подготовка данных для викторины
-          allAllergens = new Set(allProducts.map(p => p.display_allergen));
-          productsByCategory = allProducts.reduce((acc, product) => {
-            const category = product.display_category;
-            if (!acc[category]) {
-              acc[category] = [];
+            window.closeModal = function () {
+                productModal.style.display = 'none';
             }
-            acc[category].push(product);
-            return acc;
-          }, {});
+
+            window.onclick = function (event) {
+                if (event.target == productModal) {
+                    closeModal();
+                }
+            }
+
+            /**
+             * Переключает отображение страниц (Меню, Обучающий материал, Тестирование).
+             */
+            window.showPage = function (pageId) {
+                const navButtons = document.querySelectorAll('.nav-link');
+                const contents = [menuContent, trainingContent, testingContent];
+
+                navButtons.forEach(btn => btn.classList.remove('active-nav-link'));
+
+                // Скрываем все страницы
+                contents.forEach(content => content.classList.add('hidden'));
+                
+                // Управляем видимостью sidebar
+                if (pageId === 'menu') {
+                    // В режиме меню всегда должен быть виден, но его состояние управляется toggleSidebar
+                    sidebar.classList.remove('hidden'); 
+                } else {
+                    sidebar.classList.add('hidden'); // Полностью скрываем на других страницах
+                    // На десктопе возвращаем открытое состояние, чтобы при возвращении в меню не было "внезапного" открытия
+                    if (window.innerWidth >= 768) {
+                       sidebar.classList.remove('sidebar-closed-desktop');
+                       isSidebarOpen = true;
+                    }
+                }
+
+                // Показываем нужную страницу и делаем активной кнопку
+                document.querySelector(`button[onclick="showPage('${pageId}')"]`).classList.add('active-nav-link');
+
+                if (pageId === 'menu') {
+                    menuContent.classList.remove('hidden');
+                    searchInput.value = '';
+                    filterCards(); 
+                } else if (pageId === 'training') {
+                    trainingContent.classList.remove('hidden');
+                    loadTrainingData();
+                } else if (pageId === 'testing') {
+                    testingContent.classList.remove('hidden');
+                    if (allProducts.length === 0) {
+                        document.getElementById('quiz-loading-spinner').classList.remove('hidden');
+                        quizStartScreen.classList.add('hidden');
+                    } else {
+                        document.getElementById('quiz-loading-spinner').classList.add('hidden');
+                        quizStartScreen.classList.remove('hidden');
+                    }
+                    quizGameScreen.classList.add('hidden');
+                    quizResultsScreen.classList.add('hidden');
+                }
+            }
 
 
-          displayedProducts = [...allProducts];
+            // --- QUIZ LOGIC (Остались без изменений) ---
+            function prepareQuizCards() {
+                const quizPool = allProducts.filter(p => p.display_allergen !== 'Нет данных' && p.display_allergen.trim() !== '');
 
-          createFilterButtons(allProducts);
-          renderListView();
+                if (quizPool.length < TOTAL_QUESTIONS || allAllergens.size < 4) {
+                    console.error("Недостаточно данных для теста.");
+                    return [];
+                }
 
-          // Готовность теста
-          quizLoadStatus.textContent = `Данные загружены! Всего ${allProducts.length} блюд.`;
-          startQuizBtn.disabled = false;
+                const productsForQuiz = shuffleArray([...quizPool])
+                    .slice(0, TOTAL_QUESTIONS);
+
+                const quizSet = productsForQuiz.map(product => {
+                    const correctAnswer = product.display_allergen;
+                    
+                    let distractors = [...allAllergens].filter(a => a !== correctAnswer);
+                    distractors = shuffleArray(distractors).slice(0, 3);
+
+                    const options = shuffleArray([correctAnswer, ...distractors]);
+
+                    return {
+                        question: product.display_name,
+                        correctAnswer: correctAnswer,
+                        options: options
+                    };
+                });
+
+                return quizSet;
+            }
+
+            window.startQuiz = function (isRestart = false) {
+                if (allProducts.length === 0) {
+                    quizLoadStatus.textContent = 'Пожалуйста, дождитесь загрузки данных меню.';
+                    return;
+                }
+
+                quizCards = prepareQuizCards();
+                if (quizCards.length < TOTAL_QUESTIONS) {
+                     quizLoadStatus.textContent = 'Недостаточно блюд с уникальными аллергенами для теста.';
+                     startQuizBtn.disabled = true;
+                     return;
+                }
+                
+                currentCardIndex = 0;
+                correctAnswers = 0;
+                incorrectAnswers = 0;
+
+                quizStartScreen.classList.add('hidden');
+                quizResultsScreen.classList.add('hidden');
+                quizGameScreen.classList.remove('hidden');
+
+                displayCard();
+            }
+
+            function displayCard() {
+                if (currentCardIndex >= TOTAL_QUESTIONS) {
+                    showResults();
+                    return;
+                }
+
+                const card = quizCards[currentCardIndex];
+                document.getElementById('current-question-index').textContent = currentCardIndex + 1;
+                document.getElementById('correct-count').textContent = correctAnswers;
+                document.getElementById('incorrect-count').textContent = incorrectAnswers;
+
+                document.getElementById('quiz-question-dish').textContent = card.question;
+
+                const optionsContainer = document.getElementById('quiz-options-container');
+                optionsContainer.innerHTML = '';
+
+                card.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.className = 'quiz-option text-left';
+                    button.setAttribute('data-answer', option);
+                    button.onclick = () => handleAnswer(button, option, card.correctAnswer);
+                    optionsContainer.appendChild(button);
+                });
+            }
+
+            function handleAnswer(button, selectedAnswer, correctAnswer) {
+                document.querySelectorAll('.quiz-option').forEach(btn => btn.classList.add('disabled'));
+
+                const icon = document.createElement('i');
+                icon.classList.add('quiz-result-icon');
+
+                if (selectedAnswer === correctAnswer) {
+                    button.classList.add('correct');
+                    icon.classList.add('fas', 'fa-check');
+                    correctAnswers++;
+                } else {
+                    button.classList.add('incorrect');
+                    icon.classList.add('fas', 'fa-times');
+                    incorrectAnswers++;
+
+                    document.querySelectorAll('.quiz-option').forEach(btn => {
+                        if (btn.getAttribute('data-answer') === correctAnswer) {
+                            btn.classList.add('correct');
+                        }
+                    });
+                }
+
+                button.appendChild(icon);
+
+                document.getElementById('correct-count').textContent = correctAnswers;
+                document.getElementById('incorrect-count').textContent = incorrectAnswers;
+
+                setTimeout(() => {
+                    currentCardIndex++;
+                    displayCard();
+                }, 1500);
+            }
+
+            function getQuizTitle(score) {
+                if (score === TOTAL_QUESTIONS) {
+                    return '🏆 Абсолютный Молодец! 🏆';
+                } else if (score >= TOTAL_QUESTIONS * 0.8) {
+                    return 'Отличный Результат! 🌟';
+                } else if (score >= TOTAL_QUESTIONS / 2) {
+                    return 'Неплохо, но можно лучше! 😉';
+                } else {
+                    return 'Давай постараемся еще раз! 💪';
+                }
+            }
+
+            function showResults() {
+                quizGameScreen.classList.add('hidden');
+                quizResultsScreen.classList.remove('hidden');
+
+                document.getElementById('final-score').textContent = `${correctAnswers} / ${TOTAL_QUESTIONS}`;
+                document.getElementById('quiz-title').textContent = getQuizTitle(correctAnswers);
+            }
 
 
-        } catch (e) {
-          console.error('Menu Data Load Error:', e);
-          cardContainer.innerHTML = `<div class="col-span-full text-gray-800 text-center bg-red-100 p-6 rounded-xl shadow-lg border border-red-300 max-w-lg mx-auto mt-8">
-										<p class="font-bold mb-2">Ошибка загрузки меню!</p>
-										<p class="text-sm">Не удалось загрузить данные. Проверьте публикацию таблицы (gid=993893041) и наличие столбцов "название" и "аллергены".</p>
-									</div>`;
-          quizLoadStatus.textContent = 'Ошибка загрузки данных меню.';
-        } finally {
-          menuSpinner.style.display = 'none';
-          document.getElementById('quiz-loading-spinner').classList.add('hidden');
-        }
-      }
+            // --- FETCH DATA FOR MENU (Остались без изменений) ---
+            async function loadMenuData() {
+                menuSpinner.style.display = 'block';
+                cardContainer.innerHTML = '';
+                try {
+                    const res = await fetchWithRetry(SHEET_URL_MENU);
+                    const csvText = await res.text();
+                    const parsedData = parseCSV(csvText, 'menu');
 
-      // --- FETCH DATA FOR TRAINING (Unchanged) ---
-      async function loadTrainingData() {
-        trainingSpinner.classList.remove('hidden');
-        trainingLinksContainer.innerHTML = '';
-        try {
-          const res = await fetchWithRetry(SHEET_URL_TRAINING);
-          const text = await res.text();
+                    allProducts = parsedData;
+                    displayedProducts = allProducts;
+                    productsByCategory = {};
+                    allAllergens.clear();
 
-          allTrainingMaterials = parseCSV(text, 'training');
+                    allProducts.forEach(p => {
+                        const category = p.display_category;
+                        if (!productsByCategory[category]) {
+                            productsByCategory[category] = [];
+                        }
+                        productsByCategory[category].push(p);
 
-          if (allTrainingMaterials.length === 0) {
-            trainingLinksContainer.innerHTML = '<p class="col-span-full text-gray-800 text-center text-lg mt-8">Нет доступных обучающих материалов. Проверьте ссылку на Google Sheet и заголовки столбцов ("Название" и "ссылка").</p>';
-          }
+                        if (p.display_allergen && p.display_allergen !== 'Нет данных') {
+                             p.display_allergen.split(',').map(a => a.trim()).forEach(a => {
+                                 if (a) allAllergens.add(a);
+                             });
+                        }
+                    });
 
-          renderTrainingButtons();
+                    if (allProducts.length >= TOTAL_QUESTIONS && allAllergens.size >= 4) {
+                        startQuizBtn.disabled = false;
+                        quizLoadStatus.textContent = 'Данные загружены! Начните тестирование.';
+                    } else {
+                        startQuizBtn.disabled = true;
+                        quizLoadStatus.textContent = `Недостаточно блюд с уникальными аллергенами для полного теста (Нужно ${TOTAL_QUESTIONS} блюд с уникальными аллергенами).`;
+                    }
 
-        } catch (e) {
-          console.error('Training Data Load Error:', e);
-          trainingLinksContainer.innerHTML = `<div class="col-span-full text-gray-800 text-center bg-red-100 p-6 rounded-xl shadow-lg border border-red-300 max-w-lg mx-auto mt-8">
-										<p class="font-bold mb-2">Ошибка загрузки обучающих материалов!</p>
-										<p class="text-sm">Пожалуйста, проверьте, что ссылка на Google Sheet (gid=1664366590) верна, таблица опубликована в формате CSV, и ваша сеть не блокирует запрос.</p>
-									</div>`;
-        } finally {
-          trainingSpinner.classList.add('hidden');
-        }
-      }
+                    renderSidebar();
+                    filterCards('Все'); 
+
+                } catch (error) {
+                    console.error('Failed to load menu data:', error);
+                    cardContainer.innerHTML = '<p class="col-span-full text-center text-red-600 font-bold text-xl p-8">Ошибка загрузки меню. Пожалуйста, проверьте ссылку на Google Sheet.</p>';
+                    quizLoadStatus.textContent = 'Ошибка загрузки данных меню.';
+                } finally {
+                    menuSpinner.style.display = 'none';
+                }
+            }
+            
+            // --- FETCH DATA FOR TRAINING (Остались без изменений) ---
+            async function loadTrainingData() {
+                if (allTrainingMaterials.length > 0) {
+                    renderTrainingButtons();
+                    return;
+                }
+            
+                trainingSpinner.classList.remove('hidden');
+                trainingLinksContainer.innerHTML = '';
+            
+                try {
+                    const res = await fetchWithRetry(SHEET_URL_TRAINING);
+                    const csvText = await res.text();
+                    const parsedData = parseCSV(csvText, 'training');
+            
+                    allTrainingMaterials = parsedData;
+                    renderTrainingButtons();
+            
+                } catch (error) {
+                    console.error('Failed to load training data:', error);
+                    trainingLinksContainer.innerHTML = '<p class="col-span-full text-center text-red-600 font-bold text-lg mt-8">Ошибка загрузки обучающих материалов. Проверьте ссылку на Google Sheet.</p>';
+                } finally {
+                    trainingSpinner.classList.add('hidden');
+                }
+            }
 
 
-      // --- LISTENERS ---
+            // --- INITIALIZATION ---
 
-      searchInput.addEventListener('input', () => {
-        const activeCategory = document.querySelector('#filter-buttons button.active')?.textContent || 'Все';
-        filterCards(activeCategory);
-      });
+            // 1. Добавляем слушатель для поиска
+            searchInput.addEventListener('input', () => {
+                filterCards(); 
+            });
 
-      // Инициализация
-      loadMenuData();
-      showPage('menu');
-    });
-  </script>
+            // 2. Запускаем загрузку данных меню при старте
+            loadMenuData();
+
+            // 3. Устанавливаем начальное состояние боковой панели на десктопе
+            // (Убеждаемся, что на старте, если это десктоп, sidebar открыт)
+            if (window.innerWidth >= 768) {
+                // Удаляем классы мобильного скрытия
+                sidebar.classList.remove('sidebar-mobile-closed');
+                // На десктопе класс закрытия по умолчанию отсутствует, так как isSidebarOpen = true
+            }
+            
+            // 4. Добавляем слушатель изменения размера окна для корректного переключения режимов
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    // При переходе на десктоп, убедимся, что sidebar не фиксирован и не закрыт по мобильному правилу
+                    sidebar.classList.remove('sidebar-mobile-closed');
+                    sidebarOverlay.classList.add('hidden');
+                    
+                    // Если isSidebarOpen было true до ресайза, сохраняем его открытым
+                    if (isSidebarOpen && sidebar.classList.contains('sidebar-closed-desktop')) {
+                        sidebar.classList.remove('sidebar-closed-desktop');
+                    } else if (!isSidebarOpen && !sidebar.classList.contains('sidebar-closed-desktop')) {
+                        // Если должно быть закрыто, но не имеет класса
+                        sidebar.classList.add('sidebar-closed-desktop');
+                    }
+
+                } else {
+                    // При переходе на мобильный, если десктоп был закрыт, скрываем мобильный.
+                    if (sidebar.classList.contains('sidebar-closed-desktop')) {
+                        sidebar.classList.add('sidebar-mobile-closed');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
+
