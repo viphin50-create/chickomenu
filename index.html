@@ -388,7 +388,7 @@
 
         <!-- Футер экрана приветствия -->
         <div class="mt-12 text-gray-400 text-sm">
-            © 2024 ЧИКО. Все права защищены.
+            © 2025 ЧИКО. Все права защищены.
         </div>
     </div>
 
@@ -594,19 +594,21 @@
             'lite': {
                 title: 'Лайт',
                 colorClass: 'text-green-500',
-                menuUrl: PLACEHOLDER_MENU_URL, // Replace with Lite URL later
+                // Обновленная ссылка на меню для Чико Лайт
+                menuUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=2096828350&single=true&output=csv', 
                 trainingUrl: PLACEHOLDER_TRAINING_URL // Replace with Lite URL later
             },
             'lite-pro': {
                 title: 'Лайт Про',
                 colorClass: 'text-purple-500',
-                menuUrl: PLACEHOLDER_MENU_URL, // Replace later
+                menuUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=257232779&single=true&output=csv',
                 trainingUrl: PLACEHOLDER_TRAINING_URL // Replace later
             },
             'current': {
                 title: 'Текущая Концепция',
                 colorClass: 'text-orange-500',
-                menuUrl: PLACEHOLDER_MENU_URL, // Replace later
+                // Обновленная ссылка на меню для Чико Текущая Концепция (Текущая версия)
+                menuUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0ukbh5K5GdykFFCDj-H0xUODUAneKWmbeJFfe4tLTCMEWKJgCkefhrCOtsKDB_QRRYySAvI1xOTh3/pub?gid=1916463250&single=true&output=csv', 
                 trainingUrl: PLACEHOLDER_TRAINING_URL // Replace later
             }
         };
@@ -768,8 +770,10 @@
                                 item.display_desc = item['описание'] || item['подача'] || 'Описание отсутствует';
                                 item.display_allergen = pAllergen;
                                 item.display_category = item['category'] || item['категория'] || 'Общее';
-                                // !!! НОВАЯ КОЛОНКА: Состав
-                                item.display_composition = item['состав'] || ''; 
+                                // Колонка: Состав
+                                item.display_composition = item['состав'] || '';
+                                // !!! НОВАЯ КОЛОНКА: Подача
+                                item.display_serving = item['подача'] || '';
                                 results.push(item);
                             }
                         } else if (mode === 'training') {
@@ -1100,8 +1104,22 @@
                 const allergensHtml = allergens.length > 0
                     ? `<div class="flex flex-wrap gap-2 mt-2">${allergens.map(a => `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">${a}</span>`).join('')}</div>`
                     : '<span class="text-gray-500">Нет данных</span>';
+                
+                // 2. Подача (НОВЫЙ БЛОК)
+                const serving = product.display_serving.trim();
+                let servingBlock = '';
+                if (serving) {
+                    servingBlock = `
+                        <div class="mb-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 border-b pb-1 flex items-center">
+                                <i class="fas fa-mug-hot text-green-500 mr-2"></i> Подача
+                            </h3>
+                            <p class="text-gray-600 leading-relaxed">${serving}</p>
+                        </div>
+                    `;
+                }
 
-                // 2. Состав (НОВЫЙ БЛОК)
+                // 3. Состав
                 const composition = product.display_composition.trim();
                 let compositionBlock = '';
                 if (composition) {
@@ -1135,6 +1153,8 @@
                                 <p class="text-gray-600 leading-relaxed">${product.display_desc}</p>
                             </div>
                             
+                            ${servingBlock} <!-- БЛОК ПОДАЧА -->
+
                             ${compositionBlock} <!-- БЛОК СОСТАВ -->
 
                             <div class="mt-auto pt-4 border-t border-gray-100">
@@ -1178,3 +1198,4 @@
 </body>
 
 </html>
+
