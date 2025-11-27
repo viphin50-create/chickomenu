@@ -512,8 +512,10 @@
                                 <i class="fas fa-brain text-6xl text-[#FF5E62] mb-4"></i>
                                 <p class="text-gray-600">Проверь свои знания меню и аллергенов!</p>
                             </div>
+                            <!-- ОБНОВЛЕННЫЙ ТЕКСТ СТАТУСА -->
                             <p id="quiz-load-status" class="text-gray-600 font-medium text-lg mb-6">
                                 Загрузка данных меню для викторины...</p>
+                            <!-- КОНЕЦ ОБНОВЛЕНИЯ -->
                             <button id="start-quiz-btn" onclick="startQuiz()"
                                 class="quiz-start-btn px-8 py-3 rounded-full text-xl disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled>
@@ -694,6 +696,11 @@
                 cardContainer.innerHTML = '';
                 sidebarCategories.innerHTML = '';
                 trainingLinksContainer.innerHTML = '';
+                
+                // Сброс статуса викторины
+                quizLoadStatus.textContent = "Загрузка данных меню для викторины...";
+                quizLoadStatus.className = 'text-gray-600 font-medium text-lg mb-6';
+                startQuizBtn.disabled = true;
 
                 // Переключение экранов
                 appContainer.classList.add('hidden');
@@ -818,11 +825,14 @@
 
                     renderSidebar();
                     filterCards('Все');
+                    // !!! ОБНОВЛЕНИЕ: Явный вызов проверки после загрузки данных
                     initQuizCheck();
 
                 } catch (error) {
                     console.error("Initialization error:", error);
                     cardContainer.innerHTML = '<p class="text-red-600 text-center col-span-full">Не удалось загрузить данные меню. Попробуйте обновить страницу.</p>';
+                    // !!! ОБНОВЛЕНИЕ: В случае ошибки загрузки, также обновляем статус викторины
+                    initQuizCheck(); 
                 } finally {
                     menuSpinner.classList.add('hidden');
                 }
@@ -987,6 +997,7 @@
                 }
             }
 
+            // --- RENDERING TRAINING ---
             function renderTrainingMaterials() {
                 if (allTrainingMaterials.length === 0) {
                     trainingLinksContainer.innerHTML = '<p class="text-gray-500">Материалы не найдены</p>';
@@ -1002,61 +1013,103 @@
                 trainingLinksContainer.innerHTML = html;
             }
 
-            // --- QUIZ ---
+            // --- QUIZ (ТЕСТИРОВАНИЕ) ---
+            // !!! ОБНОВЛЕННАЯ ФУНКЦИЯ: Улучшенное сообщение о статусе загрузки данных
             function initQuizCheck() {
+                // Если allProducts загружен, обновляем статус и включаем кнопку
                 if (allProducts.length > 0) {
-                    quizLoadStatus.textContent = "Данные меню готовы!";
-                    quizLoadStatus.classList.add('text-green-600');
+                    quizLoadStatus.textContent = `Данные меню (${allProducts.length} позиций) готовы!`;
+                    quizLoadStatus.className = 'text-green-600 font-medium text-lg mb-6';
                     startQuizBtn.disabled = false;
+                } else {
+                    quizLoadStatus.textContent = "Не удалось загрузить данные меню.";
+                    quizLoadStatus.className = 'text-red-600 font-medium text-lg mb-6';
+                    startQuizBtn.disabled = true;
                 }
             }
+            // КОНЕЦ ОБНОВЛЕННОЙ ФУНКЦИИ
 
             window.startQuiz = function (restart = false) {
-                if (allProducts.length < 4) {
-                    // Используем пользовательский модал вместо alert
-                    openCustomAlert("Недостаточно данных для теста. Дождитесь загрузки меню.");
+                // Проверяем, есть ли хотя бы 4 разных продукта с аллергенами для создания 4 вариантов ответа
+                const productsWithAllergens = allProducts.filter(p => p.display_allergen && p.display_allergen.toLowerCase() !== 'нет данных' && p.display_allergen.length > 2);
+
+                if (productsWithAllergens.length < 4) {
+                    openCustomAlert("Недостаточно данных (минимум 4 уникальных продукта с указанными аллергенами) для создания полноценного теста.");
                     return;
                 }
+                
                 currentCardIndex = 0;
                 correctAnswers = 0;
                 incorrectAnswers = 0;
-                const productsWithAllergens = allProducts.filter(p => p.display_allergen && p.display_allergen.toLowerCase() !== 'нет данных' && p.display_allergen.length > 2);
-                const pool = productsWithAllergens.length >= 10 ? productsWithAllergens : allProducts;
-                const shuffled = shuffleArray([...pool]);
-                quizCards = shuffled.slice(0, TOTAL_QUESTIONS);
+                
+                // Используем только те продукты, у которых есть указанные аллергены, для более осмысленных вопросов.
+                // Если их меньше 10, берем все, что есть, иначе только 10.
+                const pool = productsWithAllergens;
+                
+                // Выбираем 10 вопросов (или меньше, если pool меньше 10)
+                const numQuestions = Math.min(TOTAL_QUESTIONS, pool.length);
+                quizCards = shuffleArray([...pool]).slice(0, numQuestions);
 
                 quizStartScreen.classList.add('hidden');
                 quizResultsScreen.classList.add('hidden');
                 quizGameScreen.classList.remove('hidden');
-                renderQuestion();
+                // Обновляем счетчик вопросов
+                document.getElementById('current-question-index').textContent = currentCardIndex;
+                document.getElementById('correct-count').textContent = correctAnswers;
+                document.getElementById('incorrect-count').textContent = incorrectAnswers;
+                renderQuestion(numQuestions);
             };
 
-            function renderQuestion() {
+            function renderQuestion(totalQuestions) {
                 const product = quizCards[currentCardIndex];
                 document.getElementById('current-question-index').textContent = currentCardIndex + 1;
-                const progressPct = ((currentCardIndex) / TOTAL_QUESTIONS) * 100;
+                document.querySelector('#quiz-game-screen p:first-child span:first-child').textContent = currentCardIndex + 1;
+                document.querySelector('#quiz-game-screen p:first-child').childNodes[0].nodeValue = `Вопрос: ${currentCardIndex + 1} / ${totalQuestions}`; // Обновляем общее количество вопросов
+                
+                const progressPct = ((currentCardIndex) / totalQuestions) * 100;
                 quizProgressFill.style.width = `${progressPct}%`;
 
                 document.getElementById('quiz-question-dish').textContent = product.display_name;
                 const correctAnswer = product.display_allergen;
                 let distractors = [];
-                while (distractors.length < 3) {
-                    const randomP = allProducts[Math.floor(Math.random() * allProducts.length)];
-                    const randAllergen = randomP.display_allergen;
-                    if (randAllergen !== correctAnswer && !distractors.includes(randAllergen) && randAllergen.length > 2) distractors.push(randAllergen);
+                
+                // Генерация уникальных дистракторов (неправильных вариантов ответа)
+                const allUniqueAllergens = [...new Set(allProducts.map(p => p.display_allergen).filter(a => a && a.toLowerCase() !== 'нет данных' && a.length > 2))];
+
+                while (distractors.length < 3 && distractors.length < allUniqueAllergens.length - 1) {
+                    const randomAllergen = allUniqueAllergens[Math.floor(Math.random() * allUniqueAllergens.length)];
+                    if (randomAllergen !== correctAnswer && !distractors.includes(randomAllergen)) {
+                        distractors.push(randomAllergen);
+                    }
                 }
+                
                 const options = shuffleArray([correctAnswer, ...distractors]);
-                document.getElementById('quiz-options-container').innerHTML = options.map(opt => `
-                    <div class="quiz-option" onclick="handleAnswer(this, '${opt.replace(/'/g, "\\'")}', '${correctAnswer.replace(/'/g, "\\'")}')">
+                
+                // Убедимся, что у нас ровно 4 варианта, если возможно
+                while (options.length < 4) {
+                    // Если уникальных аллергенов мало, дублируем нейтральный/фиктивный ответ
+                    options.push('Сложный вопрос...'); 
+                }
+                
+                const finalOptions = options.slice(0, 4); // Берем первые 4 (или меньше, если не набрали)
+
+                document.getElementById('quiz-options-container').innerHTML = finalOptions.map(opt => `
+                    <div class="quiz-option" onclick="handleAnswer(this, '${opt.replace(/'/g, "\\'")}', '${correctAnswer.replace(/'/g, "\\'")}', ${totalQuestions})">
                         <span>${opt}</span>
                     </div>
                 `).join('');
             }
 
-            window.handleAnswer = function (element, selected, correct) {
+            window.handleAnswer = function (element, selected, correct, totalQuestions) {
                 const allOpts = document.querySelectorAll('.quiz-option');
                 allOpts.forEach(el => el.classList.add('disabled'));
                 const isCorrect = selected === correct;
+                
+                // Если выбранный вариант — фиктивный, считаем как неправильный, если это не правильный ответ
+                if (selected === 'Сложный вопрос...' && selected !== correct) {
+                    // Это уже учтено в isCorrect, но для ясности.
+                }
+
                 if (isCorrect) {
                     element.classList.add('correct');
                     element.innerHTML += '<i class="fas fa-check-circle quiz-result-icon"></i>';
@@ -1068,28 +1121,35 @@
                     incorrectAnswers++;
                     document.getElementById('incorrect-count').textContent = incorrectAnswers;
                     allOpts.forEach(el => {
-                        if (el.textContent.trim() === correct) {
+                        // Подсвечиваем правильный ответ
+                        const elText = el.querySelector('span').textContent.trim();
+                        if (elText === correct) {
                             el.classList.add('correct');
-                            el.innerHTML += '<i class="fas fa-check-circle quiz-result-icon"></i>';
+                            if (!el.querySelector('.quiz-result-icon')) {
+                                el.innerHTML += '<i class="fas fa-check-circle quiz-result-icon"></i>';
+                            }
                         }
                     });
                 }
                 setTimeout(() => {
                     currentCardIndex++;
-                    if (currentCardIndex < TOTAL_QUESTIONS) renderQuestion();
-                    else showResults();
+                    if (currentCardIndex < totalQuestions) renderQuestion(totalQuestions);
+                    else showResults(totalQuestions);
                 }, 1500);
             };
 
-            function showResults() {
+            function showResults(totalQuestions) {
                 quizGameScreen.classList.add('hidden');
                 quizResultsScreen.classList.remove('hidden');
-                document.getElementById('final-score').textContent = `${correctAnswers} / ${TOTAL_QUESTIONS}`;
+                document.getElementById('final-score').textContent = `${correctAnswers} / ${totalQuestions}`;
+                
+                const percentage = (correctAnswers / totalQuestions) * 100;
                 let title = '';
-                if (correctAnswers === 10) title = "🤯 БОГ МЕНЮ!";
-                else if (correctAnswers >= 8) title = "😎 Эксперт Чико";
-                else if (correctAnswers >= 5) title = "🙂 Стажер";
+                if (percentage === 100) title = "🤯 БОГ МЕНЮ!";
+                else if (percentage >= 80) title = "😎 Эксперт Чико";
+                else if (percentage >= 50) title = "🙂 Стажер";
                 else title = "🥺 Нужно подучить меню...";
+                
                 document.getElementById('quiz-title').textContent = title;
                 quizProgressFill.style.width = '100%';
             }
